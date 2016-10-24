@@ -222,6 +222,27 @@ function getDevs(passBack) {
                         };
                         appliances.push(appliancename);
                     }
+                    if (devType.startsWith("Blind")) {
+                        var appliancename = {
+                            applianceId: device.idx,
+                            manufacturerName: device.hardwareName,
+                            modelName: device.subType,
+                            version: device.switchType,
+                            friendlyName: device.name,
+                            friendlyDescription: ".",
+                            isReachable: true,
+                            actions: [
+                                "turnOn",
+                                "turnOff"
+                            ],
+                            additionalApplianceDetails: {
+                                switchis: setswitch,
+                                WhatAmI: "light"
+                            }
+
+                        };
+                        appliances.push(appliancename);
+                    }
                     else if (devType == 'Temp') {
                         appliancename = {
                             applianceId: device.idx,
