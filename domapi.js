@@ -140,7 +140,7 @@ function handleControl(event, context) {
             break;
 
         default:
-            log("error - not hit a device type");
+            log("error ","error - not hit a device type");
 
     }
 }
@@ -195,6 +195,8 @@ function getDevs(passBack) {
                     var device = devArray[i];
                     var devType = device.type;
                     var setswitch = device.switchType;
+                    log("Device name: ", device.name)
+                    log("device type: ", device.type)
 
                     if (devType.startsWith("Light")) {
                         var appliancename = {
