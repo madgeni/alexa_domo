@@ -1,5 +1,4 @@
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
-var lupus = require('./node_modules/lupus/index');
 
 var api = new Domoticz({
     protocol: "http",
@@ -13,6 +12,8 @@ var result;
 var payloads;
 var appliances = [];
 var DeviceIDs = [];
+var GroupIDs = [];
+var arrRoom = [];
 
 //This is the heart of the code - takes the request/response headers for Alexa
 var func = function (event, context) {
@@ -181,11 +182,51 @@ function getDevs(passBack) {
         payloadVersion: '2'
     };
 
-    getRooms(function (callback) {
+    getRooms(function (callback, groups) {
+        if (groups.length > 0) {
 
+            for (var t = 0; t < groups.length; t++) {
+                var groupID = parseInt(groups[t]);
+
+                api.getScenesGroups(function (error, groups) {
+                    var sceneArray = groups.results;
+
+                    for (var i = 0; i < sceneArray.length; i++) {
+                        y = sceneArray.length;
+                        var element = sceneArray[i];
+                        if (groupID == element.idx) {
+                            //domoticz allows same IDX numbers for devices/scenes - yeah, i know.
+                            var elid = parseInt(element.idx) + 200
+
+                            var sceneName = {
+                                applianceId: elid,
+                                manufacturerName: element.name,
+                                modelName: element.name,
+                                version: element.idx,
+                                friendlyName: element.name,
+                                isReachable: true,
+                                actions: [
+                                    "turnOn",
+                                    "turnOff"
+                                ],
+                                additionalApplianceDetails: {
+                                    WhatAmI: "scene"
+                                }
+                            };
+                            appliances.push(sceneName);
+                            t--;
+                        }
+                        if (t == 0) {
+                            break;
+                        }
+                    }
+                });
+            }
+        }
         for (var i = 0; i < callback.length; i++) {
             var devID = callback[i];
             m = callback.length;
+
             api.getDevice({
                 idx: devID
             }, function (error, devices) {
@@ -195,8 +236,6 @@ function getDevs(passBack) {
                     var device = devArray[i];
                     var devType = device.type;
                     var setswitch = device.switchType;
-                    log("Device name: ", device.name)
-                    log("device type: ", device.type)
 
                     if (devType.startsWith("Light")) {
                         var appliancename = {
@@ -222,7 +261,7 @@ function getDevs(passBack) {
                         };
                         appliances.push(appliancename);
                     }
-                    if (devType.startsWith("Blind")) {
+                    if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
                         var appliancename = {
                             applianceId: device.idx,
                             manufacturerName: device.hardwareName,
@@ -285,6 +324,7 @@ function getDevs(passBack) {
                 m--;
 
                 if (m==0) {
+             //       log("payload: ", appliances);
                     var payloads = {
                         discoveredAppliances: appliances
                     };
@@ -300,7 +340,6 @@ function getDevs(passBack) {
     });
 }
 //handles lights
-
 
 function ctrlLights(switchtype, applianceId, func, sendback) {
     console.log(switchtype,applianceId,func);
@@ -349,34 +388,52 @@ function getRooms(callback) {
 
         var plansArray = plans.results;
 
-        //  x = plansArray.length;
+        x = plansArray.length;
         for(var i = 0; i < plansArray.length; i++) {
             var room = plansArray[i];
             var roomID = room.idx;
-
-            getRoomDevices(roomID, callback);
-        }
-    })
-}
-//This gets the list of devices in the rooms
-function getRoomDevices(devID, returnme){
-
-    api.getPlanDevs({
-        idx: devID
-    }, function(params, callback) {
-        var DevsArray = callback.results;
-        y = DevsArray.length;
-        for (var i = 0; i < DevsArray.length; i++) {
-            var device = DevsArray[i];
-            var devIDX = device.devidx;
-            DeviceIDs.push(devIDX);
-            y--;
-            if (y == 0) {
-                returnme(DeviceIDs);
+            arrRoom.push(roomID);
+            x--
+            if (x == 0) {
+                getRoomDevices(arrRoom, callback);
             }
         }
     })
 }
+//This gets the list of devices in the rooms
+function getRoomDevices(arrRoom, returnme){
+
+    for (var i = 0; i < arrRoom.length; i++) {
+        var devID = arrRoom[i];
+        k = arrRoom.length;
+
+        api.getPlanDevs({
+            idx: devID
+        }, function (params, callback) {
+            var DevsArray = callback.results;
+
+            //  y = DevsArray.length;
+            for (var i = 0; i < DevsArray.length; i++) {
+                var device = DevsArray[i];
+         //       log("device in room", device);
+                var devIDX = device.devidx;
+
+               // DeviceIDs.push(devIDX);
+               if (device.type === 1){
+                    GroupIDs.push(devIDX)
+                }
+                else if (device.type === 0){
+                    DeviceIDs.push(devIDX);
+                }
+            }
+            k--;
+
+            if (k == 0) {
+                returnme(DeviceIDs, GroupIDs);
+            }
+        })
+    }
+};
 
 //This is the logger
 var log = function(title, msg) {
