@@ -1,1 +1,5 @@
-here
+# OSX things
+.DS_Store
+
+# intelliJ
+.idea
