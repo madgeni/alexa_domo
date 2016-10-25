@@ -3,3 +3,6 @@
 
 # intelliJ
 .idea
+
+# config
+config.json

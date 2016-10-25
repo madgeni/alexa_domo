@@ -1,12 +1,14 @@
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 var lupus = require('./node_modules/lupus/index');
+var fs = require('fs');
+var config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
 
 var api = new Domoticz({
-    protocol: "http",
-    host: "",
-    port: 8080,
-    username: "",
-    password: ""
+    protocol: config.protocol,
+    host: config.host,
+    port: config.port,
+    username: config.username,
+    password: config.password
 });
 
 var result;
