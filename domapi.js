@@ -51,7 +51,7 @@ function handleDiscovery(event, context) {
 function handleControl(event, context) {
     var state;
     var idx;
-
+    log("event: ", event)
     var accessToken = event.payload.accessToken;
     var what = event.payload.appliance.additionalApplianceDetails.WhatAmI;
     var message_id = event.header.messageId;
@@ -78,6 +78,30 @@ function handleControl(event, context) {
                 confirmation = "SetPercentageConfirmation";
                 switchtype = 'dimmable';
                 funcName = dimLevel;
+            }
+            var headers = {
+                namespace: 'Alexa.ConnectedHome.Control',
+                name: confirmation,
+                payloadVersion: '2',
+                messageId: message_id
+            };
+            ctrlLights(switchtype,applianceId, funcName, function (callback) {
+                var result = {
+                    header: headers,
+                    payload: callback
+                };
+                context.succeed(result);
+            }); break;
+        case "blind":
+            var switchtype = "switch";
+
+            if (event.header.name == "TurnOnRequest") {
+                confirmation = "TurnOnConfirmation";
+                funcName = "Off";
+            }
+            else if (event.header.name == "TurnOffRequest") {
+                confirmation = "TurnOffConfirmation";
+                funcName = "On";
             }
             var headers = {
                 namespace: 'Alexa.ConnectedHome.Control',
@@ -279,7 +303,7 @@ function getDevs(passBack) {
                             ],
                             additionalApplianceDetails: {
                                 switchis: setswitch,
-                                WhatAmI: "light"
+                                WhatAmI: "blind"
                             }
 
                         };
