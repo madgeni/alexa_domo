@@ -307,7 +307,7 @@ function getDevs(passBack) {
                 m--;
 
                 if (m==0) {
-                    log("payload: ", appliances);
+                    //log("payload: ", appliances);
                     var payloads = {
                         discoveredAppliances: appliances
                     };
@@ -325,13 +325,13 @@ function getDevs(passBack) {
 //handles lights
 
 function ctrlLights(switchtype, applianceId, func, sendback) {
-    console.log(switchtype,applianceId,func);
+  //  console.log(switchtype,applianceId,func);
     api.changeSwitchState({
         type: switchtype,
         idx: applianceId,
         state: func
     }, function (params, callback) {
-        console.log(params, callback);
+   //     console.log(params, callback);
         var payloads = {};
 
         sendback(payloads)
