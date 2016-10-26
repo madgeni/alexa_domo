@@ -1,1 +1,12 @@
-here
+.DS_Store/
+.idea/
+context.json
+dimmer.json
+main.js
+discovery.js
+input.json
+settemp.json
+conf.json
+launch.json
+lightswitch.json
+
