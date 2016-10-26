@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Test domoticz api",
   "preferGlobal": "true",
+  "files": [config.json],
   "bin": {
     "domapi": "domapi.js"
   },
@@ -11,8 +12,5 @@
     "node": "*"
   },
   "dependencies": {
-    "Q": "0.0.1",
-    "async": "^2.0.1",
-    "bluebird": "^3.4.6"
-  }
+   }
 }

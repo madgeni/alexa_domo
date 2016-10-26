@@ -1,11 +1,13 @@
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
+var conf = require('./conf.json')
+
 var api = new Domoticz({
-    protocol: "http",
-    host: "",
-    port: 8080,
-    username: "",
-    password: ""
+    protocol: conf.protocol,
+    host: conf.host,
+    port: conf.port,
+    username: conf.username,
+    password: conf.password
 });
 
 var result;
@@ -204,6 +206,7 @@ function getDevs(passBack) {
                                 modelName: element.name,
                                 version: element.idx,
                                 friendlyName: element.name,
+                                friendlyDescription: "Group",
                                 isReachable: true,
                                 actions: [
                                     "turnOn",
@@ -244,7 +247,7 @@ function getDevs(passBack) {
                             modelName: device.subType,
                             version: device.switchType,
                             friendlyName: device.name,
-                            friendlyDescription: ".",
+                            friendlyDescription: devType,
                             isReachable: true,
                             actions: [
                                 "incrementPercentage",
@@ -268,7 +271,7 @@ function getDevs(passBack) {
                             modelName: device.subType,
                             version: device.switchType,
                             friendlyName: device.name,
-                            friendlyDescription: ".",
+                            friendlyDescription: devType,
                             isReachable: true,
                             actions: [
                                 "turnOn",
@@ -289,7 +292,7 @@ function getDevs(passBack) {
                             modelName: device.subType,
                             version: device.idx,
                             friendlyName: device.name,
-                            friendlyDescription: ".",
+                            friendlyDescription: devType,
                             isReachable: true,
                             actions: [
                                 "setTargetTemperature"
@@ -300,31 +303,11 @@ function getDevs(passBack) {
                         };
                         appliances.push(appliancename);
                     }
-                    else if (devType == 'Group') {
-                        var elid = parseInt(device.idx) + 200;
-                        appliancename = {
-                            applianceId: elid,
-                            manufacturerName: device.name,
-                            modelName: device.name,
-                            version: device.name,
-                            friendlyName: device.name,
-                            friendlyDescription: ".",
-                            isReachable: true,
-                            actions: [
-                                "turnOn",
-                                "turnOff"
-                            ],
-                            additionalApplianceDetails: {
-                                WhatAmI: "group"
-                            }
-                        };
-                        appliances.push(appliancename);
-                    }
                 }
                 m--;
 
                 if (m==0) {
-             //       log("payload: ", appliances);
+                    log("payload: ", appliances);
                     var payloads = {
                         discoveredAppliances: appliances
                     };
