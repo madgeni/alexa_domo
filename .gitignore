@@ -1,5 +1,5 @@
 node_modules/aws-sdk
-node_modules/.DS_Store/
+node_modules/.DS_Store
 .DS_Store/
 .idea/
 context.json
