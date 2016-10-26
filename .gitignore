@@ -1,4 +1,4 @@
-node_modules/aws-sdk/
+node_modules/aws-sdk
 .DS_Store/
 .idea/
 context.json
