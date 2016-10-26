@@ -51,7 +51,6 @@ function handleDiscovery(event, context) {
 function handleControl(event, context) {
     var state;
     var idx;
-    log("event: ", event)
     var accessToken = event.payload.accessToken;
     var what = event.payload.appliance.additionalApplianceDetails.WhatAmI;
     var message_id = event.header.messageId;
