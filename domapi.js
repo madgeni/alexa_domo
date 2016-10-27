@@ -263,67 +263,49 @@ function getDevs(passBack) {
                     var devType = device.type;
                     var setswitch = device.switchType;
 
+                    var appliancename = {
+                        applianceId: device.idx,
+                        manufacturerName: device.hardwareName,
+                        modelName: device.subType,
+                        version: device.switchType,
+                        friendlyName: device.name,
+                        friendlyDescription: devType,
+                        isReachable: true
+                    }
+
                     if (devType.startsWith("Light")) {
-                        var appliancename = {
-                            applianceId: device.idx,
-                            manufacturerName: device.hardwareName,
-                            modelName: device.subType,
-                            version: device.switchType,
-                            friendlyName: device.name,
-                            friendlyDescription: devType,
-                            isReachable: true,
-                            actions: [
+                       appliancename.actions = ([
                                 "incrementPercentage",
                                 "decrementPercentage",
                                 "setPercentage",
                                 "turnOn",
                                 "turnOff"
-                            ],
-                            additionalApplianceDetails: {
-                                switchis: setswitch,
-                                WhatAmI: "light"
-                            }
-
-                        };
+                           ])
+                        appliancename.additionalApplianceDetails = ({
+                            switchis: setswitch,
+                            WhatAmI: "light"
+                        })
                         appliances.push(appliancename);
                     }
                     if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
-                        var appliancename = {
-                            applianceId: device.idx,
-                            manufacturerName: device.hardwareName,
-                            modelName: device.subType,
-                            version: device.switchType,
-                            friendlyName: device.name,
-                            friendlyDescription: devType,
-                            isReachable: true,
-                            actions: [
+                        appliancename.actions = ([
                                 "turnOn",
                                 "turnOff"
-                            ],
-                            additionalApplianceDetails: {
+                            ])
+                        appliancename.additionalApplianceDetails = ({
                                 switchis: setswitch,
                                 WhatAmI: "blind"
-                            }
+                        })
 
-                        };
                         appliances.push(appliancename);
                     }
                     else if (devType == 'Temp') {
-                        appliancename = {
-                            applianceId: device.idx,
-                            manufacturerName: device.hardwareName,
-                            modelName: device.subType,
-                            version: device.idx,
-                            friendlyName: device.name,
-                            friendlyDescription: devType,
-                            isReachable: true,
-                            actions: [
+                        appliancename.actions = ([
                                 "setTargetTemperature"
-                            ],
-                            additionalApplianceDetails: {
+                            ])
+                        appliancename.additionalApplianceDetails = ({
                                 WhatAmI: "temp"
-                            }
-                        };
+                            })
                         appliances.push(appliancename);
                     }
                 }
