@@ -12,3 +12,4 @@ conf.json
 launch.json
 lightswitch.json
 .DS_Store
+*.zip
