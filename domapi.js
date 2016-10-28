@@ -59,6 +59,7 @@ function handleControl(event, context) {
 
     var confirmation;
     var funcName;
+    log("what am i? ", what)
 
     switch (what) {
         case "light":
@@ -115,7 +116,7 @@ function handleControl(event, context) {
                 };
                 context.succeed(result);
             }); break;
-        case "group":
+        case "scene":
 
             var AppID = parseInt(event.payload.appliance.applianceId) - 200;
 
@@ -296,7 +297,6 @@ function getDevs(passBack) {
                                 switchis: setswitch,
                                 WhatAmI: "blind"
                         })
-
                         appliances.push(appliancename);
                     }
                     else if (devType == 'Temp') {
