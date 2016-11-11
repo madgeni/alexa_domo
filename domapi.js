@@ -42,7 +42,7 @@ exports.handler = func;
 //This handles the Discovery
 function handleDiscovery(event, context) {
     getDevs(function (passBack) {
-
+    log("test", passBack);
         context.succeed(passBack);
         appliances = [];
     })
@@ -197,8 +197,8 @@ function generateControlError(name, code, description) {
 }
 
 /*This handles device discovery - based on feedback, this now does it based on Room Plans.
-// If you want a device discovered, it needs to be in a room plan
-*/
+ // If you want a device discovered, it needs to be in a room plan
+ */
 
 function getDevs(passBack) {
 
@@ -209,10 +209,14 @@ function getDevs(passBack) {
     };
 
     getRooms(function (callback, groups) {
+        //loop through each Domoticz group discovered in the room plans
         if (groups.length > 0) {
 
+            //log("group length - ", groups.length);
             for (var t = 0; t < groups.length; t++) {
                 var groupID = parseInt(groups[t]);
+                log("groups are : ", groupID);
+                log("t is? ", t);
 
                 api.getScenesGroups(function (error, groups) {
                     var sceneArray = groups.results;
@@ -220,9 +224,12 @@ function getDevs(passBack) {
                     for (var i = 0; i < sceneArray.length; i++) {
                         y = sceneArray.length;
                         var element = sceneArray[i];
+                        log("group name -", element.name);
+                        log("group idx -", element.idx);
+                        log("groupid - ", groupID);
                         if (groupID == element.idx) {
                             //domoticz allows same IDX numbers for devices/scenes - yeah, i know.
-                            var elid = parseInt(element.idx) + 200
+                            var elid = parseInt(element.idx) + 200;
 
                             var sceneName = {
                                 applianceId: elid,
@@ -240,10 +247,13 @@ function getDevs(passBack) {
                                     WhatAmI: "scene"
                                 }
                             };
+                            log("scene name ", sceneName);
                             appliances.push(sceneName);
                             t--;
                         }
+
                         if (t == 0) {
+                            log("break? ", "breaking");
                             break;
                         }
                     }
@@ -275,13 +285,13 @@ function getDevs(passBack) {
                     }
 
                     if (devType.startsWith("Light")) {
-                       appliancename.actions = ([
-                                "incrementPercentage",
-                                "decrementPercentage",
-                                "setPercentage",
-                                "turnOn",
-                                "turnOff"
-                           ])
+                        appliancename.actions = ([
+                            "incrementPercentage",
+                            "decrementPercentage",
+                            "setPercentage",
+                            "turnOn",
+                            "turnOff"
+                        ])
                         appliancename.additionalApplianceDetails = ({
                             switchis: setswitch,
                             WhatAmI: "light"
@@ -290,22 +300,23 @@ function getDevs(passBack) {
                     }
                     if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
                         appliancename.actions = ([
-                                "turnOn",
-                                "turnOff"
-                            ])
+                            "turnOn",
+                            "turnOff"
+                        ])
                         appliancename.additionalApplianceDetails = ({
-                                switchis: setswitch,
-                                WhatAmI: "blind"
+                            switchis: setswitch,
+                            WhatAmI: "blind"
                         })
                         appliances.push(appliancename);
                     }
                     else if (devType == 'Temp') {
+                        appliancename.version = "temp";
                         appliancename.actions = ([
-                                "setTargetTemperature"
-                            ])
+                            "setTargetTemperature"
+                        ])
                         appliancename.additionalApplianceDetails = ({
-                                WhatAmI: "temp"
-                            })
+                            WhatAmI: "temp"
+                        })
                         appliances.push(appliancename);
                     }
                 }
@@ -330,13 +341,13 @@ function getDevs(passBack) {
 //handles lights
 
 function ctrlLights(switchtype, applianceId, func, sendback) {
-  //  console.log(switchtype,applianceId,func);
+    //  console.log(switchtype,applianceId,func);
     api.changeSwitchState({
         type: switchtype,
         idx: applianceId,
         state: func
     }, function (params, callback) {
-   //     console.log(params, callback);
+        //     console.log(params, callback);
         var payloads = {};
 
         sendback(payloads)
@@ -381,7 +392,7 @@ function getRooms(callback) {
             var room = plansArray[i];
             var roomID = room.idx;
             arrRoom.push(roomID);
-            x--
+            x--;
             if (x == 0) {
                 getRoomDevices(arrRoom, callback);
             }
@@ -403,11 +414,11 @@ function getRoomDevices(arrRoom, returnme){
             //  y = DevsArray.length;
             for (var i = 0; i < DevsArray.length; i++) {
                 var device = DevsArray[i];
-         //       log("device in room", device);
+               //        log("device in room", device);
                 var devIDX = device.devidx;
 
-               // DeviceIDs.push(devIDX);
-               if (device.type === 1){
+                // DeviceIDs.push(devIDX);
+                if (device.type === 1){
                     GroupIDs.push(devIDX)
                 }
                 else if (device.type === 0){
@@ -421,7 +432,7 @@ function getRoomDevices(arrRoom, returnme){
             }
         })
     }
-};
+}
 
 //This is the logger
 var log = function(title, msg) {
