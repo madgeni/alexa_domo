@@ -97,11 +97,11 @@ function handleControl(event, context) {
 
             if (event.header.name == "TurnOnRequest") {
                 confirmation = "TurnOnConfirmation";
-                funcName = "Off";
+                funcName = "On";
             }
             else if (event.header.name == "TurnOffRequest") {
                 confirmation = "TurnOffConfirmation";
-                funcName = "On";
+                funcName = "Off";
             }
             var headers = {
                 namespace: 'Alexa.ConnectedHome.Control',
