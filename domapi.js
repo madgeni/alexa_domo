@@ -215,8 +215,6 @@ function getDevs(passBack) {
             //log("group length - ", groups.length);
             for (var t = 0; t < groups.length; t++) {
                 var groupID = parseInt(groups[t]);
-                log("groups are : ", groupID);
-                log("t is? ", t);
 
                 api.getScenesGroups(function (error, groups) {
                     var sceneArray = groups.results;
@@ -224,9 +222,7 @@ function getDevs(passBack) {
                     for (var i = 0; i < sceneArray.length; i++) {
                         y = sceneArray.length;
                         var element = sceneArray[i];
-                        log("group name -", element.name);
-                        log("group idx -", element.idx);
-                        log("groupid - ", groupID);
+
                         if (groupID == element.idx) {
                             //domoticz allows same IDX numbers for devices/scenes - yeah, i know.
                             var elid = parseInt(element.idx) + 200;
