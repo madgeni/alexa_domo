@@ -20,6 +20,7 @@ var arrRoom = [];
 //This is the heart of the code - takes the request/response headers for Alexa
 var func = function (event, context) {
 
+
     switch (event.header.namespace) {
 
         case 'Alexa.ConnectedHome.Discovery':
@@ -305,7 +306,7 @@ function getDevs(passBack) {
                         })
                         appliances.push(appliancename);
                     }
-                    else if (devType == 'Temp') {
+                    else if (devType == 'Temp'|| devType.startsWith("Therm")) {
                         appliancename.version = "temp";
                         appliancename.actions = ([
                             "setTargetTemperature"
