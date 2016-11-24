@@ -20,7 +20,6 @@ var arrRoom = [];
 //This is the heart of the code - takes the request/response headers for Alexa
 var func = function (event, context) {
 
-
     switch (event.header.namespace) {
 
         case 'Alexa.ConnectedHome.Discovery':
@@ -43,7 +42,7 @@ exports.handler = func;
 //This handles the Discovery
 function handleDiscovery(event, context) {
     getDevs(function (passBack) {
-    log("test", passBack);
+        log("test", passBack);
         context.succeed(passBack);
         appliances = [];
     })
@@ -98,11 +97,11 @@ function handleControl(event, context) {
 
             if (event.header.name == "TurnOnRequest") {
                 confirmation = "TurnOnConfirmation";
-                funcName = "On";
+                funcName = "Off";
             }
             else if (event.header.name == "TurnOffRequest") {
                 confirmation = "TurnOffConfirmation";
-                funcName = "Off";
+                funcName = "On";
             }
             var headers = {
                 namespace: 'Alexa.ConnectedHome.Control',
@@ -216,6 +215,8 @@ function getDevs(passBack) {
             //log("group length - ", groups.length);
             for (var t = 0; t < groups.length; t++) {
                 var groupID = parseInt(groups[t]);
+                log("groups are : ", groupID);
+                log("t is? ", t);
 
                 api.getScenesGroups(function (error, groups) {
                     var sceneArray = groups.results;
@@ -223,7 +224,9 @@ function getDevs(passBack) {
                     for (var i = 0; i < sceneArray.length; i++) {
                         y = sceneArray.length;
                         var element = sceneArray[i];
-
+                        log("group name -", element.name);
+                        log("group idx -", element.idx);
+                        log("groupid - ", groupID);
                         if (groupID == element.idx) {
                             //domoticz allows same IDX numbers for devices/scenes - yeah, i know.
                             var elid = parseInt(element.idx) + 200;
@@ -411,7 +414,7 @@ function getRoomDevices(arrRoom, returnme){
             //  y = DevsArray.length;
             for (var i = 0; i < DevsArray.length; i++) {
                 var device = DevsArray[i];
-               //        log("device in room", device);
+                //        log("device in room", device);
                 var devIDX = device.devidx;
 
                 // DeviceIDs.push(devIDX);

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Test domoticz api",
   "preferGlobal": "true",
-  "files": [config.json],
+  "files": "conf.json",
   "bin": {
     "domapi": "domapi.js"
   },
@@ -12,5 +12,6 @@
     "node": "*"
   },
   "dependencies": {
-   }
+    "aws-sdk": "^2.7.7"
+  }
 }
