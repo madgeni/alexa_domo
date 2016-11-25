@@ -11,5 +11,6 @@ settemp.json
 conf.json
 launch.json
 lightswitch.json
+package.json
 .DS_Store
 *.zip

@@ -42,7 +42,7 @@ exports.handler = func;
 //This handles the Discovery
 function handleDiscovery(event, context) {
     getDevs(function (passBack) {
-        log("test", passBack);
+        //log("test", passBack);
         context.succeed(passBack);
         appliances = [];
     })
@@ -211,23 +211,15 @@ function getDevs(passBack) {
     getRooms(function (callback, groups) {
         //loop through each Domoticz group discovered in the room plans
         if (groups.length > 0) {
-
-            //log("group length - ", groups.length);
-            for (var t = 0; t < groups.length; t++) {
-                var groupID = parseInt(groups[t]);
-                log("groups are : ", groupID);
-                log("t is? ", t);
+             groups.forEach(function(roomGrp){
 
                 api.getScenesGroups(function (error, groups) {
                     var sceneArray = groups.results;
-
                     for (var i = 0; i < sceneArray.length; i++) {
                         y = sceneArray.length;
                         var element = sceneArray[i];
-                        log("group name -", element.name);
-                        log("group idx -", element.idx);
-                        log("groupid - ", groupID);
-                        if (groupID == element.idx) {
+
+                        if (roomGrp == element.idx) {
                             //domoticz allows same IDX numbers for devices/scenes - yeah, i know.
                             var elid = parseInt(element.idx) + 200;
 
@@ -247,18 +239,12 @@ function getDevs(passBack) {
                                     WhatAmI: "scene"
                                 }
                             };
-                            log("scene name ", sceneName);
+                            //log("scene name ", sceneName);
                             appliances.push(sceneName);
-                            t--;
-                        }
-
-                        if (t == 0) {
-                            log("break? ", "breaking");
-                            break;
                         }
                     }
                 });
-            }
+            })
         }
         for (var i = 0; i < callback.length; i++) {
             var devID = callback[i];
