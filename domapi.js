@@ -295,7 +295,7 @@ function getDevs(passBack) {
                         })
                         appliances.push(appliancename);
                     }
-                    else if (devType == 'Temp') {
+                    else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
                         appliancename.version = "temp";
                         appliancename.actions = ([
                             "setTargetTemperature"
