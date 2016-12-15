@@ -1,6 +1,6 @@
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
-var conf = require('./conf.json')
+var conf = require('./conf.json');
 
 var api = new Domoticz({
     protocol: conf.protocol,
@@ -59,7 +59,6 @@ function handleControl(event, context) {
 
     var confirmation;
     var funcName;
-    log("what am i? ", what)
 
     switch (what) {
         case "light":
@@ -209,9 +208,10 @@ function getDevs(passBack) {
     };
 
     getRooms(function (callback, groups) {
+
         //loop through each Domoticz group discovered in the room plans
         if (groups.length > 0) {
-             groups.forEach(function(roomGrp){
+            groups.forEach(function(roomGrp){
 
                 api.getScenesGroups(function (error, groups) {
                     var sceneArray = groups.results;
@@ -327,7 +327,7 @@ function getDevs(passBack) {
 //handles lights
 
 function ctrlLights(switchtype, applianceId, func, sendback) {
-    //  console.log(switchtype,applianceId,func);
+
     api.changeSwitchState({
         type: switchtype,
         idx: applianceId,
@@ -370,10 +370,19 @@ function ctrlTemp(idx, temp, sendback) {
 function getRooms(callback) {
 
     api.getPlans(function (error, plans) {
+        if(error) {
+            console.log('Error:', error);
+            return;
+        }
 
         var plansArray = plans.results;
 
+         if (plansArray == null){
+         console.log("no room plans");
+         return
+         }
         x = plansArray.length;
+
         for(var i = 0; i < plansArray.length; i++) {
             var room = plansArray[i];
             var roomID = room.idx;
@@ -395,9 +404,13 @@ function getRoomDevices(arrRoom, returnme){
         api.getPlanDevs({
             idx: devID
         }, function (params, callback) {
-            var DevsArray = callback.results;
 
-            //  y = DevsArray.length;
+            var DevsArray = callback.results;
+            if (DevsArray == null){
+                console.log("no devices in room plans");
+                return
+            }
+
             for (var i = 0; i < DevsArray.length; i++) {
                 var device = DevsArray[i];
                 //        log("device in room", device);
