@@ -56,6 +56,7 @@ function handleControl(event, context) {
     var message_id = event.header.messageId;
     var switchtype = event.payload.appliance.additionalApplianceDetails.switchis;
     var applianceId = event.payload.appliance.applianceId;
+    var maxDimLevel = event.payload.appliance.additionalApplianceDetails.maxDimLevel;
 
     var confirmation;
     var funcName;
@@ -73,7 +74,7 @@ function handleControl(event, context) {
                 funcName = "Off";
             }
             else if (event.header.name == "SetPercentageRequest") {
-                dimLevel = event.payload.percentageState.value;
+                dimLevel = event.payload.percentageState.value / ( 100 / maxDimLevel);
                 confirmation = "SetPercentageConfirmation";
                 switchtype = 'dimmable';
                 funcName = dimLevel;
@@ -279,6 +280,7 @@ function getDevs(passBack) {
                             "turnOff"
                         ])
                         appliancename.additionalApplianceDetails = ({
+                            maxDimLevel: device.maxDimLevel,
                             switchis: setswitch,
                             WhatAmI: "light"
                         })
