@@ -408,20 +408,19 @@ function getRoomDevices(arrRoom, returnme){
             var DevsArray = callback.results;
             if (DevsArray == null){
                 console.log("no devices in room plans");
-                return
-            }
+            } else {
+                for (var i = 0; i < DevsArray.length; i++) {
+                    var device = DevsArray[i];
+                    //        log("device in room", device);
+                    var devIDX = device.devidx;
 
-            for (var i = 0; i < DevsArray.length; i++) {
-                var device = DevsArray[i];
-                //        log("device in room", device);
-                var devIDX = device.devidx;
-
-                // DeviceIDs.push(devIDX);
-                if (device.type === 1){
-                    GroupIDs.push(devIDX)
-                }
-                else if (device.type === 0){
-                    DeviceIDs.push(devIDX);
+                    // DeviceIDs.push(devIDX);
+                    if (device.type === 1){
+                        GroupIDs.push(devIDX)
+                    }
+                    else if (device.type === 0){
+                        DeviceIDs.push(devIDX);
+                    }
                 }
             }
             k--;
