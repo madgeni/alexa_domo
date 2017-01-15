@@ -254,60 +254,61 @@ function getDevs(passBack) {
                 idx: devID
             }, function (error, devices) {
                 var devArray = devices.results;
-                for (var i = 0; i < devArray.length; i++) {
+                if (devArray) {
+                    for (var i = 0; i < devArray.length; i++) {
 
-                    var device = devArray[i];
-                    var devType = device.type;
-                    var setswitch = device.switchType;
+                        var device = devArray[i];
+                        var devType = device.type;
+                        var setswitch = device.switchType;
 
-                    var appliancename = {
-                        applianceId: device.idx,
-                        manufacturerName: device.hardwareName,
-                        modelName: device.subType,
-                        version: device.switchType,
-                        friendlyName: device.name,
-                        friendlyDescription: devType,
-                        isReachable: true
-                    }
+                        var appliancename = {
+                            applianceId: device.idx,
+                            manufacturerName: device.hardwareName,
+                            modelName: device.subType,
+                            version: device.switchType,
+                            friendlyName: device.name,
+                            friendlyDescription: devType,
+                            isReachable: true
+                        }
 
-                    if (devType.startsWith("Light")) {
-                        appliancename.actions = ([
-                            "incrementPercentage",
-                            "decrementPercentage",
-                            "setPercentage",
-                            "turnOn",
-                            "turnOff"
-                        ])
-                        appliancename.additionalApplianceDetails = ({
-                            switchis: setswitch,
-                            WhatAmI: "light"
-                        })
-                        appliances.push(appliancename);
-                    }
-                    if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
-                        appliancename.actions = ([
-                            "turnOn",
-                            "turnOff"
-                        ])
-                        appliancename.additionalApplianceDetails = ({
-                            switchis: setswitch,
-                            WhatAmI: "blind"
-                        })
-                        appliances.push(appliancename);
-                    }
-                    else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
-                        appliancename.version = "temp";
-                        appliancename.actions = ([
-                            "setTargetTemperature"
-                        ])
-                        appliancename.additionalApplianceDetails = ({
-                            WhatAmI: "temp"
-                        })
-                        appliances.push(appliancename);
+                        if (devType.startsWith("Light")) {
+                            appliancename.actions = ([
+                                "incrementPercentage",
+                                "decrementPercentage",
+                                "setPercentage",
+                                "turnOn",
+                                "turnOff"
+                            ])
+                            appliancename.additionalApplianceDetails = ({
+                                switchis: setswitch,
+                                WhatAmI: "light"
+                            })
+                            appliances.push(appliancename);
+                        }
+                        if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
+                            appliancename.actions = ([
+                                "turnOn",
+                                "turnOff"
+                            ])
+                            appliancename.additionalApplianceDetails = ({
+                                switchis: setswitch,
+                                WhatAmI: "blind"
+                            })
+                            appliances.push(appliancename);
+                        }
+                        else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
+                            appliancename.version = "temp";
+                            appliancename.actions = ([
+                                "setTargetTemperature"
+                            ])
+                            appliancename.additionalApplianceDetails = ({
+                                WhatAmI: "temp"
+                            })
+                            appliances.push(appliancename);
+                        }
                     }
                 }
                 m--;
-
                 if (m==0) {
                     //log("payload: ", appliances);
                     var payloads = {
