@@ -207,123 +207,92 @@ function getDevs(passBack) {
         payloadVersion: '2'
     };
 
-    getRooms(function (callback, groups) {
+    api.getDevices({}, function (error, devices) {
+        var devArray = devices.results;
+        if (devArray) {
+            for (var i = 0; i < devArray.length; i++) {
+                var device = devArray[i];
 
-        //loop through each Domoticz group discovered in the room plans
-        if (groups.length > 0) {
-            groups.forEach(function(roomGrp){
+                // Omit devices which aren't in a room plan
+                if (device.planID == '0')
+                    continue;
 
-                api.getScenesGroups(function (error, groups) {
-                    var sceneArray = groups.results;
-                    for (var i = 0; i < sceneArray.length; i++) {
-                        y = sceneArray.length;
-                        var element = sceneArray[i];
+                var devType = device.type;
+                var setswitch = device.switchType;
 
-                        if (roomGrp == element.idx) {
-                            //domoticz allows same IDX numbers for devices/scenes - yeah, i know.
-                            var elid = parseInt(element.idx) + 200;
-
-                            var sceneName = {
-                                applianceId: elid,
-                                manufacturerName: element.name,
-                                modelName: element.name,
-                                version: element.idx,
-                                friendlyName: element.name,
-                                friendlyDescription: "Group",
-                                isReachable: true,
-                                actions: [
-                                    "turnOn",
-                                    "turnOff"
-                                ],
-                                additionalApplianceDetails: {
-                                    WhatAmI: "scene"
-                                }
-                            };
-                            //log("scene name ", sceneName);
-                            appliances.push(sceneName);
-                        }
-                    }
-                });
-            })
-        }
-        for (var i = 0; i < callback.length; i++) {
-            var devID = callback[i];
-            m = callback.length;
-
-            api.getDevice({
-                idx: devID
-            }, function (error, devices) {
-                var devArray = devices.results;
-                if (devArray) {
-                    for (var i = 0; i < devArray.length; i++) {
-
-                        var device = devArray[i];
-                        var devType = device.type;
-                        var setswitch = device.switchType;
-
-                        var appliancename = {
-                            applianceId: device.idx,
-                            manufacturerName: device.hardwareName,
-                            modelName: device.subType,
-                            version: device.switchType,
-                            friendlyName: device.name,
-                            friendlyDescription: devType,
-                            isReachable: true
-                        }
-
-                        if (devType.startsWith("Light")) {
-                            appliancename.actions = ([
-                                "incrementPercentage",
-                                "decrementPercentage",
-                                "setPercentage",
-                                "turnOn",
-                                "turnOff"
-                            ])
-                            appliancename.additionalApplianceDetails = ({
-                                switchis: setswitch,
-                                WhatAmI: "light"
-                            })
-                            appliances.push(appliancename);
-                        }
-                        if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
-                            appliancename.actions = ([
-                                "turnOn",
-                                "turnOff"
-                            ])
-                            appliancename.additionalApplianceDetails = ({
-                                switchis: setswitch,
-                                WhatAmI: "blind"
-                            })
-                            appliances.push(appliancename);
-                        }
-                        else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
-                            appliancename.version = "temp";
-                            appliancename.actions = ([
-                                "setTargetTemperature"
-                            ])
-                            appliancename.additionalApplianceDetails = ({
-                                WhatAmI: "temp"
-                            })
-                            appliances.push(appliancename);
-                        }
-                    }
+                var appliancename = {
+                    applianceId: device.idx,
+                    manufacturerName: device.hardwareName,
+                    modelName: device.subType,
+                    version: device.switchType,
+                    friendlyName: device.name,
+                    friendlyDescription: devType,
+                    isReachable: true
                 }
-                m--;
-                if (m==0) {
-                    //log("payload: ", appliances);
-                    var payloads = {
-                        discoveredAppliances: appliances
-                    };
-                    var result = {
-                        header: headers,
-                        payload: payloads
-                    };
-                    passBack(result);
-                }
-            });
+                if (devType.startsWith("Scene") || devType.startsWith("Group")) {
+                    appliancename.manufacturerName = device.name,
+                    appliancename.modelName = device.name,
+                    appliancename.version = device.idx,
 
+                    appliancename.applianceId = parseInt(device.idx) + 200;
+                    appliancename.applianceId.actions = ([
+                        "turnOn",
+                        "turnOff"
+                    ])
+                    appliancename.additionalApplianceDetails = ({
+                        WhatAmI: "scene"
+                    })
+                    appliances.push(appliancename);
+                }
+                else if (devType.startsWith("Light")) {
+                    appliancename.actions = ([
+                        "incrementPercentage",
+                        "decrementPercentage",
+                        "setPercentage",
+                        "turnOn",
+                        "turnOff"
+                    ])
+                    appliancename.additionalApplianceDetails = ({
+                        switchis: setswitch,
+                        WhatAmI: "light"
+                    })
+                    appliances.push(appliancename);
+                }
+                else if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
+                    appliancename.actions = ([
+                        "turnOn",
+                        "turnOff"
+                    ])
+                    appliancename.additionalApplianceDetails = ({
+                        switchis: setswitch,
+                        WhatAmI: "blind"
+                    })
+                    appliances.push(appliancename);
+                }
+                else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
+                    appliancename.version = "temp";
+                    appliancename.actions = ([
+                        "setTargetTemperature"
+                    ])
+                    appliancename.additionalApplianceDetails = ({
+                        WhatAmI: "temp"
+                    })
+                    appliances.push(appliancename);
+                }
+            }
         }
+
+        //log("payload: ", appliances);
+        var payloads = {
+            discoveredAppliances: appliances
+        };
+        var result = {
+            header: headers,
+            payload: payloads
+        };
+        passBack(result);
     });
+
 }
 //handles lights
 
@@ -439,3 +408,5 @@ var log = function(title, msg) {
     console.log('**** ' + title + ': ' + JSON.stringify(msg));
 
 };
+
+getDevs(console.log);
