@@ -439,3 +439,5 @@ var log = function(title, msg) {
     console.log('**** ' + title + ': ' + JSON.stringify(msg));
 
 };
+
+getDevs(console.log);
