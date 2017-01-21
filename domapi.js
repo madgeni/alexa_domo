@@ -1,3 +1,4 @@
+
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
@@ -56,6 +57,7 @@ function handleControl(event, context) {
     var message_id = event.header.messageId;
     var switchtype = event.payload.appliance.additionalApplianceDetails.switchis;
     var applianceId = event.payload.appliance.applianceId;
+    var maxDimLevel = event.payload.appliance.additionalApplianceDetails.maxDimLevel;
 
     var confirmation;
     var funcName;
@@ -73,7 +75,8 @@ function handleControl(event, context) {
                 funcName = "Off";
             }
             else if (event.header.name == "SetPercentageRequest") {
-                dimLevel = event.payload.percentageState.value;
+               // dimLevel = event.payload.percentageState.value;
+                dimLevel = event.payload.percentageState.value / ( 100 / maxDimLevel);
                 confirmation = "SetPercentageConfirmation";
                 switchtype = 'dimmable';
                 funcName = dimLevel;
@@ -231,10 +234,10 @@ function getDevs(passBack) {
                 }
                 if (devType.startsWith("Scene") || devType.startsWith("Group")) {
                     appliancename.manufacturerName = device.name,
-                    appliancename.modelName = device.name,
-                    appliancename.version = device.idx,
+                        appliancename.modelName = device.name,
+                        appliancename.version = device.idx,
 
-                    appliancename.applianceId = parseInt(device.idx) + 200;
+                        appliancename.applianceId = parseInt(device.idx) + 200;
                     appliancename.applianceId.actions = ([
                         "turnOn",
                         "turnOff"
@@ -347,10 +350,10 @@ function getRooms(callback) {
 
         var plansArray = plans.results;
 
-         if (plansArray == null){
-         console.log("no room plans");
-         return
-         }
+        if (plansArray == null){
+            console.log("no room plans");
+            return
+        }
         x = plansArray.length;
 
         for(var i = 0; i < plansArray.length; i++) {

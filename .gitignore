@@ -14,3 +14,4 @@ lightswitch.json
 package.json
 .DS_Store
 *.zip
+*_myversion*.*
