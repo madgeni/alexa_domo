@@ -256,6 +256,7 @@ function getDevs(passBack) {
                         "turnOff"
                     ])
                     appliancename.additionalApplianceDetails = ({
+                        maxDimLevel: device.maxDimLevel,
                         switchis: setswitch,
                         WhatAmI: "light"
                     })
