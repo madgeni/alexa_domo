@@ -75,7 +75,7 @@ function handleControl(event, context) {
                 funcName = "Off";
             }
             else if (event.header.name == "SetPercentageRequest") {
-               // dimLevel = event.payload.percentageState.value;
+                // dimLevel = event.payload.percentageState.value;
                 dimLevel = event.payload.percentageState.value / ( 100 / maxDimLevel);
                 confirmation = "SetPercentageConfirmation";
                 switchtype = 'dimmable';
@@ -159,10 +159,26 @@ function handleControl(event, context) {
                 payloadVersion: '2',
                 messageId: message_id
             };
+            var TempPayload = {
+                targetTemperature: {
+                    value: temp
+                },
+                temperatureMode: {
+                    value: "HEAT"
+                },
+                previousState: {
+                    targetTemperature: {
+                        value: 0
+                    },
+                    mode: {
+                        value: "Heat"
+                    }
+                }
+            };
             ctrlTemp(applianceId, temp, function (callback) {
                 var result = {
                     header: headers,
-                    payload: callback
+                    payload: TempPayload
                 };
                 context.succeed(result);
             });
@@ -256,6 +272,7 @@ function getDevs(passBack) {
                         "turnOff"
                     ])
                     appliancename.additionalApplianceDetails = ({
+                        maxDimLevel: device.maxDimLevel,
                         switchis: setswitch,
                         WhatAmI: "light"
                     })
