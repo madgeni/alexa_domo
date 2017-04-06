@@ -42,8 +42,8 @@ exports.handler = func;
 
 //This handles the Discovery
 function handleDiscovery(event, context) {
-    getDevs(function (passBack) {
-        //log("test", passBack);
+    getDevs(event, context, function (passBack) {
+
         context.succeed(passBack);
         appliances = [];
     })
@@ -190,35 +190,12 @@ function handleControl(event, context) {
     }
 }
 
-//This handles the errors - obvs!
-function generateControlError(name, code, description) {
-    var headers = {
-        namespace: 'Alexa.ConnectedHome.Control',
-        name: name,
-        payloadVersion: '2'
-    };
-
-    var payload;
-    payload = {
-        exception: {
-            code: code,
-            description: description
-        }
-    };
-
-    var result = {
-        header: headers,
-        payload: payload
-    };
-
-    return result;
-}
 
 /*This handles device discovery - based on feedback, this now does it based on Room Plans.
- // If you want a device discovered, it needs to be in a room plan
+  If you want a device discovered, it needs to be in a room plan
  */
 
-function getDevs(passBack) {
+function getDevs(event, context, passBack) {
 
     var headers = {
         namespace: 'Alexa.ConnectedHome.Discovery',
@@ -227,6 +204,10 @@ function getDevs(passBack) {
     };
 
     api.getDevices({}, function (error, devices) {
+        if (error){
+            console.log(error);
+            handleError(event, context, "TargetBridgeConnectivityUnstableError");
+        }
         var devArray = devices.results;
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
@@ -239,15 +220,33 @@ function getDevs(passBack) {
                 var devType = device.type;
                 var setswitch = device.switchType;
 
+                var dz_name = device.name;
+                if (device.description != ""){
+                    // Search for Alexa_Name string, ignore casesensitive and whitespaces
+                    // Help for regular expression: https://regex101.com/
+
+                    console.log("Description found ", device.description);
+                    var regex = /Alexa_Name:\s*(.+)/im;
+                    var match = regex.exec(device.description);
+                    if (match !== null) {
+                        dz_name = match[1].trim();
+                        console.log("match =  ", match[1].trim());
+                    }
+                }
+                else {
+                console.log("No description found ", device.name);
+                }
+
                 var appliancename = {
                     applianceId: device.idx,
                     manufacturerName: device.hardwareName,
                     modelName: device.subType,
                     version: device.switchType,
-                    friendlyName: device.name,
+                    friendlyName: dz_name,
                     friendlyDescription: devType,
                     isReachable: true
                 }
+
                 if (devType.startsWith("Scene") || devType.startsWith("Group")) {
                     appliancename.manufacturerName = device.name,
                         appliancename.modelName = device.name,
@@ -356,71 +355,24 @@ function ctrlTemp(idx, temp, sendback) {
     });
 }
 
-//This discovers your Room Plans
-function getRooms(callback) {
+//This handles the errors - obvs!
+function handleError(event, context, name) {
+    var headers = {
+        namespace: 'Alexa.ConnectedHome.Control',
+        name: name,
+        payloadVersion: '2',
+        messageID: event.header.messageId
+    };
+    var payload = {};
 
-    api.getPlans(function (error, plans) {
-        if(error) {
-            console.log('Error:', error);
-            return;
-        }
+    var result = {
+        header: headers,
+        payload: payload
+    };
 
-        var plansArray = plans.results;
-
-        if (plansArray == null){
-            console.log("no room plans");
-            return
-        }
-        x = plansArray.length;
-
-        for(var i = 0; i < plansArray.length; i++) {
-            var room = plansArray[i];
-            var roomID = room.idx;
-            arrRoom.push(roomID);
-            x--;
-            if (x == 0) {
-                getRoomDevices(arrRoom, callback);
-            }
-        }
-    })
+    context.succeed(result);
 }
-//This gets the list of devices in the rooms
-function getRoomDevices(arrRoom, returnme){
 
-    for (var i = 0; i < arrRoom.length; i++) {
-        var devID = arrRoom[i];
-        k = arrRoom.length;
-
-        api.getPlanDevs({
-            idx: devID
-        }, function (params, callback) {
-
-            var DevsArray = callback.results;
-            if (DevsArray == null){
-                console.log("no devices in room plans");
-            } else {
-                for (var i = 0; i < DevsArray.length; i++) {
-                    var device = DevsArray[i];
-                    //        log("device in room", device);
-                    var devIDX = device.devidx;
-
-                    // DeviceIDs.push(devIDX);
-                    if (device.type === 1){
-                        GroupIDs.push(devIDX)
-                    }
-                    else if (device.type === 0){
-                        DeviceIDs.push(devIDX);
-                    }
-                }
-            }
-            k--;
-
-            if (k == 0) {
-                returnme(DeviceIDs, GroupIDs);
-            }
-        })
-    }
-}
 
 //This is the logger
 var log = function(title, msg) {
@@ -429,4 +381,4 @@ var log = function(title, msg) {
 
 };
 
-getDevs(console.log);
+//getDevs(console.log);
