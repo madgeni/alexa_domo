@@ -190,6 +190,7 @@ function handleControl(event, context) {
     }
 }
 
+
 /*This handles device discovery - based on feedback, this now does it based on Room Plans.
   If you want a device discovered, it needs to be in a room plan
  */
@@ -205,21 +206,8 @@ function getDevs(event, context, passBack) {
     api.getDevices({}, function (error, devices) {
         if (error){
             console.log(error);
-            var headers = {
-                namespace: 'Alexa.ConnectedHome.Control',
-                name: "TargetBridgeConnectivityUnstableError",
-                payloadVersion: '2',
-                messageID: event.header.messageId
-            };
-            var payload = {};
-
-            var result = {
-                header: headers,
-                payload: payload
-                };
-            console.log(result);
-            context.succeed(result)
-            }
+            handleError(event, context, "TargetBridgeConnectivityUnstableError");
+        }
         var devArray = devices.results;
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
@@ -368,7 +356,7 @@ function ctrlTemp(idx, temp, sendback) {
 }
 
 //This handles the errors - obvs!
-function handleError(event, name, callback) {
+function handleError(event, context, name) {
     var headers = {
         namespace: 'Alexa.ConnectedHome.Control',
         name: name,
@@ -381,8 +369,8 @@ function handleError(event, name, callback) {
         header: headers,
         payload: payload
     };
-    console.log(result);
-    callback(result)
+
+    context.succeed(result);
 }
 
 
