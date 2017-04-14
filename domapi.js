@@ -219,17 +219,29 @@ function getDevs(event, context, passBack) {
 
                 var devType = device.type;
                 var setswitch = device.switchType;
+                var dz_name = device.name;
 
+                if (device.description != "") {
+                    // Search for Alexa_Name string, ignore casesensitive and whitespaces
+                    // Help for regular expression: https://regex101.com/
+
+                    console.log("Description found ", device.description);
+                    var regex = /Alexa_Name:\s*(.+)/im;
+                    var match = regex.exec(device.description);
+                    if (match !== null) {
+                        dz_name = match[1].trim();
+                    }
+                }
 
                 var appliancename = {
                     applianceId: device.idx,
                     manufacturerName: device.hardwareName,
                     modelName: device.subType,
                     version: device.switchType,
-                    friendlyName: devType,
-                    friendlyDescription: devType,
+                    friendlyName: device.name,
+                    friendlyDescription: dz_name,
                     isReachable: true
-                }
+                };
 
                 if (devType.startsWith("Scene") || devType.startsWith("Group")) {
                     appliancename.manufacturerName = device.name,
@@ -240,7 +252,7 @@ function getDevs(event, context, passBack) {
                     appliancename.applianceId.actions = ([
                         "turnOn",
                         "turnOff"
-                    ])
+                    ]);
                     appliancename.additionalApplianceDetails = ({
                         WhatAmI: "scene"
                     })
