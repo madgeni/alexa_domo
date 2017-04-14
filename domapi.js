@@ -220,29 +220,13 @@ function getDevs(event, context, passBack) {
                 var devType = device.type;
                 var setswitch = device.switchType;
 
-                var dz_name = device.name;
-                if (device.description != ""){
-                    // Search for Alexa_Name string, ignore casesensitive and whitespaces
-                    // Help for regular expression: https://regex101.com/
-
-                    console.log("Description found ", device.description);
-                    var regex = /Alexa_Name:\s*(.+)/im;
-                    var match = regex.exec(device.description);
-                    if (match !== null) {
-                        dz_name = match[1].trim();
-                        console.log("match =  ", match[1].trim());
-                    }
-                }
-                else {
-                console.log("No description found ", device.name);
-                }
 
                 var appliancename = {
                     applianceId: device.idx,
                     manufacturerName: device.hardwareName,
                     modelName: device.subType,
                     version: device.switchType,
-                    friendlyName: dz_name,
+                    friendlyName: devType,
                     friendlyDescription: devType,
                     isReachable: true
                 }
