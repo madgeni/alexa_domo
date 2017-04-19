@@ -297,14 +297,15 @@ function getDevs(event, context, passBack) {
                         dz_name = match[1].trim();
                     }
                 }
+                console.log("device name is - ", device.name, " and friendly description is ", dz_name)
 
                 var appliancename = {
                     applianceId: device.idx,
                     manufacturerName: device.hardwareName,
                     modelName: device.subType,
                     version: device.switchType,
-                    friendlyName: device.name,
-                    friendlyDescription: dz_name,
+                    friendlyName: dz_name,
+                    friendlyDescription: devType,
                     isReachable: true
                 };
 
@@ -320,7 +321,7 @@ function getDevs(event, context, passBack) {
                     ]);
                     appliancename.additionalApplianceDetails = ({
                         WhatAmI: "scene"
-                    })
+                    });
                     appliances.push(appliancename);
                 }
                 else if (devType.startsWith("Light")) {
