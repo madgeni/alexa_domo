@@ -28,6 +28,16 @@ SetTargetTemperatureRequest
 Example Utterances:
 “Alexa, set the device name to number degrees”
 
+IncrementTargetTemperatureRequest 
+
+Example Utterances:
+“Alexa, increase the device name by number degrees”
+
+DecrementTargetTemperatureRequest 
+
+Example Utterances:
+“Alexa, decrease device name by number degrees”
+
 Specific Light controls:
 SetPercentageRequest 
 
