@@ -26,16 +26,10 @@ var func = function (event, context) {
         case 'Alexa.ConnectedHome.Discovery':
             handleDiscovery(event, context);
             break;
-
-
         case 'Alexa.ConnectedHome.Control':
-            handleControl(event, context);
-            break;
-
         case 'Alexa.ConnectedHome.Query':
             handleControl(event, context);
             break;
-
         default:
             console.log('Err', 'No supported namespace: ' + event.header.namespace);
             context.fail('Something went wrong');
@@ -69,17 +63,19 @@ function handleControl(event, context) {
     var strHeader = event.header.name;
 
     switch (what) {
+
+        case "blind":
         case "light":
             switchtype = "switch";
-            if (strHeader == "TurnOnRequest") {
+            if (strHeader === "TurnOnRequest") {
                 confirmation = "TurnOnConfirmation";
                 funcName = "On";
             }
-            else if (strHeader == "TurnOffRequest") {
+            else if (strHeader === "TurnOffRequest") {
                 confirmation = "TurnOffConfirmation";
                 funcName = "Off";
             }
-            else if (strHeader == "SetPercentageRequest") {
+            else if (strHeader === "SetPercentageRequest") {
                 // dimLevel = event.payload.percentageState.value;
                 dimLevel = event.payload.percentageState.value / ( 100 / maxDimLevel);
                 confirmation = "SetPercentageConfirmation";
@@ -87,7 +83,7 @@ function handleControl(event, context) {
                 funcName = dimLevel;
             }
 
-            else if (strHeader.includes("PercentageRequest")) {
+            else if (strHeader.includes("Increment") || strHeader.includes("Decrement")) {
                 var strConf = strHeader.replace('Request', 'Confirmation');
 
                 confirmation = strConf;
@@ -95,9 +91,10 @@ function handleControl(event, context) {
                 var incLvl = event.payload.deltaPercentage.value;
 
                 switchtype = 'dimmable';
+
                 getDevice(applianceId, what, function (returnme) {
-                   var intRet = parseInt(returnme);
-                    if (strConf.charAt(0)== 'I') {
+                    var intRet = parseInt(returnme);
+                    if (strConf.charAt(0) === 'I') {
                         funcName = intRet + (intRet / 100 * incLvl);
                     } else {
                         funcName = intRet - (intRet / 100 * incLvl);
@@ -108,13 +105,13 @@ function handleControl(event, context) {
                         payloadVersion: '2',
                         messageId: message_id
                     };
-                     ctrlLights(switchtype, applianceId, funcName, function (callback) {
-                            var result = {
-                                header: headers,
-                                payload: callback
-                            };
-                            context.succeed(result);
-                     });
+                    ctrlLights(switchtype, applianceId, funcName, function (callback) {
+                        var result = {
+                            header: headers,
+                            payload: callback
+                        };
+                        context.succeed(result);
+                    });
                 });
                 break;
             }
@@ -132,40 +129,16 @@ function handleControl(event, context) {
                 context.succeed(result);
             });
             break;
-        case "blind":
-            switchtype = "switch";
 
-            if (strHeader == "TurnOnRequest") {
-                confirmation = "TurnOnConfirmation";
-                funcName = "Off";
-            }
-            else if (strHeader == "TurnOffRequest") {
-                confirmation = "TurnOffConfirmation";
-                funcName = "On";
-            }
-            var headers = {
-                namespace: 'Alexa.ConnectedHome.Control',
-                name: confirmation,
-                payloadVersion: '2',
-                messageId: message_id
-            };
-            ctrlLights(switchtype, applianceId, funcName, function (callback) {
-                var result = {
-                    header: headers,
-                    payload: callback
-                };
-                context.succeed(result);
-            });
-            break;
         case "scene":
 
             var AppID = parseInt(event.payload.appliance.applianceId) - 200;
 
-            if (strHeader == "TurnOnRequest") {
+            if (strHeader === "TurnOnRequest") {
                 confirmation = "TurnOnConfirmation";
                 funcName = "On";
             }
-            else if (strHeader == "TurnOffRequest") {
+            else if (strHeader === "TurnOffRequest") {
                 confirmation = "TurnOffConfirmation";
                 funcName = "Off";
             }
@@ -186,16 +159,66 @@ function handleControl(event, context) {
         case "temp":
             applianceId = event.payload.appliance.applianceId;
 
-            if (strHeader == "SetTargetTemperatureRequest") {
-                confirmation = "SetTargetTemperatureConfirmation";
-                var temp = event.payload.targetTemperature.value;
+            if (strHeader.includes("Increment") || strHeader.includes("Decrement")) {
+                strConf = strHeader.replace('Request', 'Confirmation');
+                confirmation = strConf;
+                incLvl = event.payload.deltaTemperature.value;
+                getDevice(applianceId, what, function (returnme) {
+                    var intRet = parseInt(returnme);
+                    console.log("returned temp is : ", intRet)
+                    intTemp = intRet;
+                    console.log("confirmation header is ", strConf)
+                    if (strConf.charAt(0) === 'I') {
+                        temp = intRet + (intRet / 100 * incLvl);
+                        console.log(temp)
+                    } else {
+                        temp = intRet - (intRet / 100 * incLvl);
+                        console.log(temp)
+                    }
+                    console.log("temperature to set is: ", temp)
+                    headers = {
+                        namespace: event.header.namespace,
+                        name: confirmation,
+                        payloadVersion: '2',
+                        messageId: message_id
+                    };
+                    var TempPayload = {
+                        targetTemperature: {
+                            value: temp
+                        },
+                        temperatureMode: {
+                            value: "HEAT"
+                        },
+                        previousState: {
+                            targetTemperature: {
+                                value: intTemp
+                            },
+                            mode: {
+                                value: "Heat"
+                            }
+                        }
+                    };
+                    ctrlTemp(applianceId, temp, function (callback) {
+                        var result = {
+                            header: headers,
+                            payload: TempPayload
+                        };
+                        context.succeed(result);
+                    });
+                });
+                break;
+
+            } else {
+                    confirmation = "SetTargetTemperatureConfirmation";
+                    var temp = event.payload.targetTemperature.value;
+                    var intTemp = 0
                 headers = {
                     namespace: event.header.namespace,
                     name: confirmation,
                     payloadVersion: '2',
                     messageId: message_id
                 };
-                var TempPayload = {
+                TempPayload = {
                     targetTemperature: {
                         value: temp
                     },
@@ -204,7 +227,7 @@ function handleControl(event, context) {
                     },
                     previousState: {
                         targetTemperature: {
-                            value: 0
+                            value: intTemp
                         },
                         mode: {
                             value: "Heat"
@@ -219,11 +242,11 @@ function handleControl(event, context) {
                     context.succeed(result);
                 });
                 break;
-                //	flVal = parseFloat(temp);
-            }
 
+            }
+                //	flVal = parseFloat(temp);
             //GetTemp request
-            if (strHeader == "GetTemperatureReadingRequest") {
+            if (strHeader === "GetTemperatureReadingRequest") {
                 confirmation = "GetTemperatureReadingResponse";
                 headers = {
                     namespace: event.header.namespace,
@@ -256,7 +279,6 @@ function handleControl(event, context) {
     }
 }
 
-
 /*This handles device discovery - based on feedback, this now does it based on Room Plans.
   If you want a device discovered, it needs to be in a room plan
  */
@@ -273,6 +295,7 @@ function getDevs(event, context, passBack) {
         if (error){
             console.log(error);
             handleError(event, context, "TargetBridgeConnectivityUnstableError");
+            return;
         }
         var devArray = devices.results;
         if (devArray) {
@@ -280,16 +303,15 @@ function getDevs(event, context, passBack) {
                 var device = devArray[i];
 
                 // Omit devices which aren't in a room plan
-                if (device.planID == '0')
+                if (device.planID === '0')
                     continue;
 
                 var devType = device.type;
                 var setswitch = device.switchType;
                 var dz_name = device.name;
 
-                if (device.description != "") {
+                if (device.description !== "") {
                     // Search for Alexa_Name string, ignore casesensitive and whitespaces
-                    // Help for regular expression: https://regex101.com/
 
                     var regex = /Alexa_Name:\s*(.+)/im;
                     var match = regex.exec(device.description);
@@ -297,7 +319,7 @@ function getDevs(event, context, passBack) {
                         dz_name = match[1].trim();
                     }
                 }
-                console.log("device name is - ", device.name, " and friendly description is ", dz_name)
+                console.log("device name is - ", device.name, " and friendly description is ", dz_name);
 
                 var appliancename = {
                     applianceId: device.idx,
@@ -311,10 +333,9 @@ function getDevs(event, context, passBack) {
 
                 if (devType.startsWith("Scene") || devType.startsWith("Group")) {
                     appliancename.manufacturerName = device.name,
-                        appliancename.modelName = device.name,
-                        appliancename.version = device.idx,
-
-                        appliancename.applianceId = parseInt(device.idx) + 200;
+                    appliancename.modelName = device.name,
+                    appliancename.version = device.idx,
+                    appliancename.applianceId = parseInt(device.idx) + 200;
                     appliancename.applianceId.actions = ([
                         "turnOn",
                         "turnOff"
@@ -331,33 +352,33 @@ function getDevs(event, context, passBack) {
                         "setPercentage",
                         "turnOn",
                         "turnOff"
-                    ])
+                    ]);
                     appliancename.additionalApplianceDetails = ({
                         maxDimLevel: device.maxDimLevel,
                         switchis: setswitch,
                         WhatAmI: "light"
-                    })
+                    });
                     appliances.push(appliancename);
                 }
                 else if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
                     appliancename.actions = ([
                         "turnOn",
                         "turnOff"
-                    ])
+                    ]);
                     appliancename.additionalApplianceDetails = ({
                         switchis: setswitch,
                         WhatAmI: "blind"
-                    })
+                    });
                     appliances.push(appliancename);
                 }
                 else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
                     appliancename.version = "temp";
                     appliancename.actions = ([
                         "setTargetTemperature"
-                    ])
+                    ]);
                     appliancename.additionalApplianceDetails = ({
                         WhatAmI: "temp"
-                    })
+                    });
                     appliances.push(appliancename);
                 }
             }
@@ -436,7 +457,6 @@ function handleError(event, context, name) {
 }
 
 function getDevice(idx, devType, sendback){
-
     var intRet;
     api.getDevice({
         idx: idx
@@ -445,14 +465,13 @@ function getDevice(idx, devType, sendback){
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
-                if(devType == 'temp'){
+                if(devType === 'temp'){
                     intRet = device.temp
-                } else if (devType == 'light'){
+                } else if (devType === 'light'){
                     intRet = device.level
                 }
                 sendback(intRet)
             }}
-
         });
     }
 
@@ -462,5 +481,3 @@ var log = function(title, msg) {
     console.log('**** ' + title + ': ' + JSON.stringify(msg));
 
 };
-
-//getDevs(console.log);
