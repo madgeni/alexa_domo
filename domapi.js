@@ -3,8 +3,6 @@ var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
 
-//var validator = require('validation');
-
 var api = new Domoticz({
     protocol: conf.protocol,
     host: conf.host,
@@ -21,9 +19,9 @@ var GroupIDs = [];
 var arrRoom = [];
 
 //This is the heart of the code - takes the request/response headers for Alexa
-var func = function (event, context) {
+var func =  function (event, context) {
 
-    switch (event.header.namespace) {
+   switch (event.header.namespace) {
 
         case 'Alexa.ConnectedHome.Discovery':
             handleDiscovery(event, context);
@@ -37,6 +35,7 @@ var func = function (event, context) {
             context.fail('Something went wrong');
             break;
     }
+
 };
 exports.handler = func;
 
@@ -99,12 +98,8 @@ function handleControl(event, context) {
                     } else {
                         funcName = intRet - (intRet / 100 * incLvl);
                     }
-                    headers = {
-                        namespace: 'Alexa.ConnectedHome.Control',
-                        name: confirmation,
-                        payloadVersion: '2',
-                        messageId: message_id
-                    };
+                    var headers = generateResponseHeader(event,confirmation);
+
                     ctrlLights(switchtype, applianceId, funcName, function (callback) {
                         var result = {
                             header: headers,
@@ -115,12 +110,9 @@ function handleControl(event, context) {
                 });
                 break;
             }
-            headers = {
-                namespace: 'Alexa.ConnectedHome.Control',
-                name: confirmation,
-                payloadVersion: '2',
-                messageId: message_id
-            };
+
+            var headers = generateResponseHeader(event,confirmation);
+
             ctrlLights(switchtype, applianceId, funcName, function (callback) {
                 var result = {
                     header: headers,
@@ -142,12 +134,8 @@ function handleControl(event, context) {
                 confirmation = "TurnOffConfirmation";
                 funcName = "Off";
             }
-            headers = {
-                namespace: 'Alexa.ConnectedHome.Control',
-                name: confirmation,
-                payloadVersion: '2',
-                messageId: message_id
-            };
+
+            var headers = generateResponseHeader(event,confirmation);
             ctrlScene(AppID, funcName, function (callback) {
                 var result = {
                     header: headers,
@@ -176,12 +164,8 @@ function handleControl(event, context) {
                         console.log(temp)
                     }
                     console.log("temperature to set is: ", temp)
-                    headers = {
-                        namespace: event.header.namespace,
-                        name: confirmation,
-                        payloadVersion: '2',
-                        messageId: message_id
-                    };
+                    var headers = generateResponseHeader(event,confirmation);
+
                     var TempPayload = {
                         targetTemperature: {
                             value: temp
@@ -211,13 +195,11 @@ function handleControl(event, context) {
             } else {
                     confirmation = "SetTargetTemperatureConfirmation";
                     var temp = event.payload.targetTemperature.value;
+                    console.log("temp to set is ", temp)
                     var intTemp = 0;
-                headers = {
-                    namespace: event.header.namespace,
-                    name: confirmation,
-                    payloadVersion: '2',
-                    messageId: message_id
-                };
+
+                var headers = generateResponseHeader(event,confirmation);
+
                 TempPayload = {
                     targetTemperature: {
                         value: temp
@@ -248,13 +230,7 @@ function handleControl(event, context) {
             if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "GetTargetTemperatureRequest")) {
                 strConf = strHeader.replace('Request', 'Confirmation');
                 confirmation = strConf;
-
-                headers = {
-                    namespace: event.header.namespace,
-                    name: confirmation,
-                    payloadVersion: '2',
-                    messageId: message_id
-                };
+                var headers = generateResponseHeader(event,confirmation);
 
                 getDevice(applianceId, what, function (callback) {
 
@@ -286,11 +262,14 @@ function handleControl(event, context) {
 
 function getDevs(event, context, passBack) {
 
-    var headers = {
+   /* var headers = {
         namespace: 'Alexa.ConnectedHome.Discovery',
         name: 'DiscoverAppliancesResponse',
         payloadVersion: '2'
-    };
+    };*/
+
+    var response_name = "DiscoverAppliancesResponse";
+    var headers = generateResponseHeader(event,response_name);
 
     api.getDevices({}, function (error, devices) {
         if (error){
@@ -411,9 +390,7 @@ function ctrlLights(switchtype, applianceId, func, sendback) {
         idx: applianceId,
         state: func
     }, function (params, callback) {
-        //     console.log(params, callback);
         var payloads = {};
-
         sendback(payloads)
     });
 }
@@ -424,7 +401,6 @@ function ctrlScene(idx, func, sendback) {
         idx: idx,
         state: func
     }, function (params, callback) {
-        console.log(params, callback);
         var payloads = {};
         sendback(payloads)
     });
@@ -438,7 +414,6 @@ function ctrlTemp(idx, temp, sendback) {
         idx: idx,
         value: temp
     }, function(params, callback) {
-        console.log(callback);
         var payloads = {};
         sendback(payloads)
     });
@@ -446,12 +421,9 @@ function ctrlTemp(idx, temp, sendback) {
 
 //This handles the errors - obvs!
 function handleError(event, context, name) {
-    var headers = {
-        namespace: 'Alexa.ConnectedHome.Control',
-        name: name,
-        payloadVersion: '2',
-        messageID: event.header.messageId
-    };
+
+    var headers = generateResponseHeader(event,name);
+
     var payload = {};
 
     var result = {
@@ -464,10 +436,12 @@ function handleError(event, context, name) {
 
 function getDevice(idx, devType, sendback){
     var intRet;
+    console.log("IDX / Type ", idx, " ", devType)
     api.getDevice({
         idx: idx
         }, function(params, callback) {
         var devArray = callback.results;
+        console.log(devArray)
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
@@ -480,6 +454,16 @@ function getDevice(idx, devType, sendback){
             }}
         });
     }
+
+function generateResponseHeader(request,response_name){
+     header = {
+        'namespace': request.header.namespace,
+        'name': response_name,
+        'payloadVersion': '2',
+        'messageId': request.header.messageId
+    };
+    return header;
+}
 
 //This is the logger
 var log = function(title, msg) {
