@@ -152,7 +152,7 @@ function handleControl(event, context) {
                 confirmation = strConf;
                 incLvl = event.payload.deltaTemperature.value;
                 getDevice(applianceId, what, function (returnme) {
-                    var intRet = parseInt(returnme);
+                    var intRet = parseFloat(returnme);
                     console.log("returned temp is : ", intRet)
                     intTemp = intRet;
                     console.log("confirmation header is ", strConf)
@@ -446,7 +446,11 @@ function getDevice(idx, devType, sendback){
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 if(devType === 'temp'){
+                    if (device.temp = null){
+                        intRet = device.setPoint
+                    } else {
                     intRet = device.temp
+                    }
                 } else if (devType === 'light'){
                     intRet = device.level
                 }
