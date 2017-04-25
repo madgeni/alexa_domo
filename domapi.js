@@ -245,7 +245,7 @@ function handleControl(event, context) {
 
             }
             //GetTemp request
-            if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "getTemperatureReading")) {
+            if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "GetTargetTemperatureRequest")) {
                 strConf = strHeader.replace('Request', 'Confirmation');
                 confirmation = strConf;
 

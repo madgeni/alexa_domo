@@ -23,6 +23,10 @@ GetTemperatureReadingRequest
 
 Example Utterances: “Alexa, what is the temperature of device name?” - Currently US hosting only
 
+GetTargetTemperatureRequest 
+
+Example Utterances: “Alexa, what is the device name set to?
+
 SetTargetTemperatureRequest 
 
 Example Utterances:
