@@ -82,7 +82,7 @@ function handleControl(event, context) {
                 switchtype = 'dimmable';
                 funcName = dimLevel;
             }
-            else if (strHeader.includes("Increment") || strHeader.includes("Decrement")) {
+            else if (strHeader.includes("IncrementPercent") || strHeader.includes("DecrementPercent")) {
                 var strConf = strHeader.replace('Request', 'Confirmation');
 
                 confirmation = strConf;
@@ -147,23 +147,23 @@ function handleControl(event, context) {
         case "temp":
             applianceId = event.payload.appliance.applianceId;
 
-            if (strHeader.includes("Increment") || strHeader.includes("Decrement")) {
+            if (strHeader.includes("IncrementTargetTemperature") || strHeader.includes("DecrementTargetTemperature")) {
                 strConf = strHeader.replace('Request', 'Confirmation');
                 confirmation = strConf;
                 incLvl = event.payload.deltaTemperature.value;
                 getDevice(applianceId, what, function (returnme) {
                     var intRet = parseFloat(returnme);
-                    console.log("returned temp is : ", intRet)
+                    console.log("returned temp is : ", intRet);
                     intTemp = intRet;
-                    console.log("confirmation header is ", strConf)
+                    console.log("confirmation header is ", strConf);
                     if (strConf.charAt(0) === 'I') {
-                        temp = intRet + (intRet / 100 * incLvl);
+                        temp = intRet + incLvl;
                         console.log(temp)
                     } else {
-                        temp = intRet - (intRet / 100 * incLvl);
+                        temp = intRet - incLvl
                         console.log(temp)
                     }
-                    console.log("temperature to set is: ", temp)
+                    console.log("temperature to set is: ", temp);
                     var headers = generateResponseHeader(event,confirmation);
 
                     var TempPayload = {
@@ -192,7 +192,7 @@ function handleControl(event, context) {
                 });
                 break;
 
-            } else {
+            } else if (strHeader.includes("SetTargetTemperature")) {
                     confirmation = "SetTargetTemperatureConfirmation";
                     var temp = event.payload.targetTemperature.value;
                     console.log("temp to set is ", temp)
@@ -358,7 +358,6 @@ function getDevs(event, context, passBack) {
                         "getTemperatureReading",
                         "incrementTargetTemperature",
                         "decrementTargetTemperature",
-                        "setPercentage",
                         "setTargetTemperature"
                     ]);
                     appliancename.additionalApplianceDetails = ({
@@ -441,12 +440,11 @@ function getDevice(idx, devType, sendback){
         idx: idx
         }, function(params, callback) {
         var devArray = callback.results;
-        console.log(devArray)
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 if(devType === 'temp'){
-                    if (device.temp = null){
+                    if (device.subType === "SetPoint"){
                         intRet = device.setPoint
                     } else {
                     intRet = device.temp
