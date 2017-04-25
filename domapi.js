@@ -153,17 +153,17 @@ function handleControl(event, context) {
                 incLvl = event.payload.deltaTemperature.value;
                 getDevice(applianceId, what, function (returnme) {
                     var intRet = parseFloat(returnme);
-                    //console.log("returned temp is : ", intRet);
+                    //log("returned temp is : ", intRet);
                     intTemp = intRet;
-                    //console.log("confirmation header is ", strConf);
+                    //log("confirmation header is ", strConf);
                     if (strConf.charAt(0) === 'I') {
                         temp = intRet + incLvl;
-                   //     console.log(temp)
+                        //log("temp is", intRet)
                     } else {
                         temp = intRet - incLvl
-                 //       console.log(temp)
+                      //log("temp is", temp);
                     }
-                    console.log("temperature to set is: ", temp);
+                    log("temperature to set is: ", temp);
                     var headers = generateResponseHeader(event,confirmation);
 
                     var TempPayload = {
@@ -195,7 +195,7 @@ function handleControl(event, context) {
             } else if (strHeader.includes("SetTargetTemperature")) {
                     confirmation = "SetTargetTemperatureConfirmation";
                     var temp = event.payload.targetTemperature.value;
-                 //   console.log("temp to set is ", temp)
+                //    log("temp to set is ", temp)
                     var intTemp = 0;
 
                 var headers = generateResponseHeader(event,confirmation);
@@ -267,7 +267,7 @@ function getDevs(event, context, passBack) {
 
     api.getDevices({}, function (error, devices) {
         if (error){
-            console.log(error);
+            log("error:", error);
             handleError(event, context, "TargetBridgeConnectivityUnstableError");
             return;
         }
@@ -293,8 +293,8 @@ function getDevs(event, context, passBack) {
                         dz_name = match[1].trim();
                     }
                 }
-                console.log("device name is - ", device.name, " and friendly description is ", dz_name);
-
+                //var msg = ("device name is - ", device.name, " and friendly description is ", dz_name);
+                // log("device info", msg);
                 var appliancename = {
                     applianceId: device.idx,
                     manufacturerName: device.hardwareName,
@@ -361,7 +361,6 @@ function getDevs(event, context, passBack) {
                 }
             }
         }
-
         //log("payload: ", appliances);
         var payloads = {
             discoveredAppliances: appliances
@@ -436,14 +435,14 @@ function getDevice(idx, devType, sendback){
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
-            //console.log(devArray);
+            //log("list of values", devArray);
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 if(devType === 'temp'){
                     if (device.subType === "SetPoint"){
                         intRet = device.setPoint
                     } else {
-                    intRet = device.temp
+                        intRet = device.temp
                     }
                 } else if (devType === 'light'){
                     intRet = device.level
