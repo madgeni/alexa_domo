@@ -3,6 +3,8 @@ var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
 
+//var validator = require('validation');
+
 var api = new Domoticz({
     protocol: conf.protocol,
     host: conf.host,
@@ -76,13 +78,11 @@ function handleControl(event, context) {
                 funcName = "Off";
             }
             else if (strHeader === "SetPercentageRequest") {
-                // dimLevel = event.payload.percentageState.value;
                 dimLevel = event.payload.percentageState.value / ( 100 / maxDimLevel);
                 confirmation = "SetPercentageConfirmation";
                 switchtype = 'dimmable';
                 funcName = dimLevel;
             }
-
             else if (strHeader.includes("Increment") || strHeader.includes("Decrement")) {
                 var strConf = strHeader.replace('Request', 'Confirmation');
 
@@ -211,7 +211,7 @@ function handleControl(event, context) {
             } else {
                     confirmation = "SetTargetTemperatureConfirmation";
                     var temp = event.payload.targetTemperature.value;
-                    var intTemp = 0
+                    var intTemp = 0;
                 headers = {
                     namespace: event.header.namespace,
                     name: confirmation,
@@ -244,10 +244,11 @@ function handleControl(event, context) {
                 break;
 
             }
-                //	flVal = parseFloat(temp);
             //GetTemp request
-            if (strHeader === "GetTemperatureReadingRequest") {
-                confirmation = "GetTemperatureReadingResponse";
+            if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "getTemperatureReading")) {
+                strConf = strHeader.replace('Request', 'Confirmation');
+                confirmation = strConf;
+
                 headers = {
                     namespace: event.header.namespace,
                     name: confirmation,
@@ -374,6 +375,11 @@ function getDevs(event, context, passBack) {
                 else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
                     appliancename.version = "temp";
                     appliancename.actions = ([
+                        "getTargetTemperature",
+                        "getTemperatureReading",
+                        "incrementTargetTemperature",
+                        "decrementTargetTemperature",
+                        "setPercentage",
                         "setTargetTemperature"
                     ]);
                     appliancename.additionalApplianceDetails = ({
