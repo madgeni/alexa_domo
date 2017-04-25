@@ -153,15 +153,15 @@ function handleControl(event, context) {
                 incLvl = event.payload.deltaTemperature.value;
                 getDevice(applianceId, what, function (returnme) {
                     var intRet = parseFloat(returnme);
-                    console.log("returned temp is : ", intRet);
+                    //console.log("returned temp is : ", intRet);
                     intTemp = intRet;
-                    console.log("confirmation header is ", strConf);
+                    //console.log("confirmation header is ", strConf);
                     if (strConf.charAt(0) === 'I') {
                         temp = intRet + incLvl;
-                        console.log(temp)
+                   //     console.log(temp)
                     } else {
                         temp = intRet - incLvl
-                        console.log(temp)
+                 //       console.log(temp)
                     }
                     console.log("temperature to set is: ", temp);
                     var headers = generateResponseHeader(event,confirmation);
@@ -195,7 +195,7 @@ function handleControl(event, context) {
             } else if (strHeader.includes("SetTargetTemperature")) {
                     confirmation = "SetTargetTemperatureConfirmation";
                     var temp = event.payload.targetTemperature.value;
-                    console.log("temp to set is ", temp)
+                 //   console.log("temp to set is ", temp)
                     var intTemp = 0;
 
                 var headers = generateResponseHeader(event,confirmation);
@@ -261,12 +261,6 @@ function handleControl(event, context) {
  */
 
 function getDevs(event, context, passBack) {
-
-   /* var headers = {
-        namespace: 'Alexa.ConnectedHome.Discovery',
-        name: 'DiscoverAppliancesResponse',
-        payloadVersion: '2'
-    };*/
 
     var response_name = "DiscoverAppliancesResponse";
     var headers = generateResponseHeader(event,response_name);
@@ -435,12 +429,14 @@ function handleError(event, context, name) {
 
 function getDevice(idx, devType, sendback){
     var intRet;
-    console.log("IDX / Type ", idx, " ", devType)
+
     api.getDevice({
         idx: idx
         }, function(params, callback) {
         var devArray = callback.results;
         if (devArray) {
+            //turn this on to check the list of values the device returns
+            //console.log(devArray);
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 if(devType === 'temp'){
