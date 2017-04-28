@@ -25,7 +25,7 @@ Example Utterances: “Alexa, what is the temperature of device name?” - Curre
 
 GetTargetTemperatureRequest 
 
-Example Utterances: “Alexa, what is the device name set to?
+Example Utterances: “Alexa, what is the device name set to? - Currently US hosting only
 
 SetTargetTemperatureRequest 
 
