@@ -1,4 +1,5 @@
 
+
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
@@ -20,7 +21,7 @@ var arrRoom = [];
 
 //This is the heart of the code - takes the request/response headers for Alexa
 var func =  function (event, context) {
-
+//log("event is ", event)
    switch (event.header.namespace) {
 
         case 'Alexa.ConnectedHome.Discovery':
@@ -42,7 +43,6 @@ exports.handler = func;
 //This handles the Discovery
 function handleDiscovery(event, context) {
     getDevs(event, context, function (passBack) {
-
         context.succeed(passBack);
         appliances = [];
     })
@@ -62,7 +62,7 @@ function handleControl(event, context) {
     var confirmation;
     var funcName;
     var strHeader = event.header.name;
-
+  //  log("event is: ", event)
     switch (what) {
 
         case "blind":
@@ -153,15 +153,11 @@ function handleControl(event, context) {
                 incLvl = event.payload.deltaTemperature.value;
                 getDevice(applianceId, what, function (returnme) {
                     var intRet = parseFloat(returnme);
-                    //log("returned temp is : ", intRet);
                     intTemp = intRet;
-                    //log("confirmation header is ", strConf);
                     if (strConf.charAt(0) === 'I') {
                         temp = intRet + incLvl;
-                        //log("temp is", intRet)
                     } else {
                         temp = intRet - incLvl
-                      //log("temp is", temp);
                     }
                     log("temperature to set is: ", temp);
                     var headers = generateResponseHeader(event,confirmation);
@@ -227,29 +223,32 @@ function handleControl(event, context) {
 
             }
             //GetTemp request
-            if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "GetTargetTemperatureRequest")) {
-                strConf = strHeader.replace('Request', 'Confirmation');
+            else if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "GetTargetTemperatureRequest")) {
+                strConf = strHeader.replace('Request', 'Response');
+
                 confirmation = strConf;
-                var headers = generateResponseHeader(event,confirmation);
-
                 getDevice(applianceId, what, function (callback) {
-
                     var GetPayload = {
-                        temperatureReading: {
-                            value: callback
+                        targetTemperature: {
+                            value: parseFloat(callback.value1)
                         },
-                        applianceResponseTimestamp: Date.now()
+//                        applianceResponseTimestamp: Date.now(),
+                        temperatureMode: {
+                            value: "CUSTOM",
+                            friendlyName: callback.value2
+                        }
                     };
+                    var headers = generateResponseHeader(event,confirmation);
                     var result = {
                         header: headers,
                         payload: GetPayload
                     };
+                 //   log("result is ", result)
                     context.succeed(result);
 
                 });
                 break;
             }
-            break;
         default:
             log("error ","error - not hit a device type");
 
@@ -275,7 +274,7 @@ function getDevs(event, context, passBack) {
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
-
+          //      log("device detail is: ", device)
                 // Omit devices which aren't in a room plan
                 if (device.planID === '0')
                     continue;
@@ -428,16 +427,26 @@ function handleError(event, context, name) {
 
 function getDevice(idx, devType, sendback){
     var intRet;
-
     api.getDevice({
         idx: idx
         }, function(params, callback) {
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
-            //log("list of values", devArray);
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
+                //log("name is ", device.name)
+                var devName = device.name;
+                if (device.description !== "") {
+
+                    var regex = /Alexa_Name:\s*(.+)/im;
+                    var match = regex.exec(device.description);
+                    if (match !== null) {
+                        devName = match[1].trim();
+                    }
+                }
+                var callBackString = {};
+
                 if(devType === 'temp'){
                     if (device.subType === "SetPoint"){
                         intRet = device.setPoint
@@ -447,7 +456,9 @@ function getDevice(idx, devType, sendback){
                 } else if (devType === 'light'){
                     intRet = device.level
                 }
-                sendback(intRet)
+                callBackString.value1 = intRet;
+                callBackString.value2 = devName;
+                sendback(callBackString)
             }}
         });
     }
