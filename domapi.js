@@ -1,5 +1,4 @@
 
-
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
@@ -15,13 +14,10 @@ var api = new Domoticz({
 var result;
 var payloads;
 var appliances = [];
-var DeviceIDs = [];
-var GroupIDs = [];
-var arrRoom = [];
 
 //This is the heart of the code - takes the request/response headers for Alexa
 var func =  function (event, context) {
-//log("event is ", event)
+
    switch (event.header.namespace) {
 
         case 'Alexa.ConnectedHome.Discovery':
@@ -52,7 +48,6 @@ function handleDiscovery(event, context) {
 function handleControl(event, context) {
     var state;
     var idx;
-    var accessToken = event.payload.accessToken;
     var what = event.payload.appliance.additionalApplianceDetails.WhatAmI;
     var message_id = event.header.messageId;
     var switchtype = event.payload.appliance.additionalApplianceDetails.switchis;
@@ -433,12 +428,11 @@ function getDevice(idx, devType, sendback){
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
+            //log("device list", devArray
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
-                //log("name is ", device.name)
                 var devName = device.name;
                 if (device.description !== "") {
-
                     var regex = /Alexa_Name:\s*(.+)/im;
                     var match = regex.exec(device.description);
                     if (match !== null) {
@@ -446,7 +440,6 @@ function getDevice(idx, devType, sendback){
                     }
                 }
                 var callBackString = {};
-
                 if(devType === 'temp'){
                     if (device.subType === "SetPoint"){
                         intRet = device.setPoint
@@ -472,7 +465,6 @@ function generateResponseHeader(request,response_name){
     };
     return header;
 }
-
 //This is the logger
 var log = function(title, msg) {
 
