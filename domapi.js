@@ -1,4 +1,3 @@
-
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
@@ -18,7 +17,7 @@ var appliances = [];
 //This is the heart of the code - takes the request/response headers for Alexa
 var func =  function (event, context) {
 
-   switch (event.header.namespace) {
+    switch (event.header.namespace) {
 
         case 'Alexa.ConnectedHome.Discovery':
             handleDiscovery(event, context);
@@ -57,8 +56,7 @@ function handleControl(event, context) {
     var confirmation;
     var funcName;
     var strHeader = event.header.name;
-    log("header is ", strHeader)
-  //  log("event is: ", event)
+    //  log("event is: ", event)
     switch (what) {
 
         case "blind":
@@ -185,10 +183,10 @@ function handleControl(event, context) {
                 break;
 
             } else if (strHeader.includes("SetTargetTemperature")) {
-                    confirmation = "SetTargetTemperatureConfirmation";
-                    var temp = event.payload.targetTemperature.value;
+                confirmation = "SetTargetTemperatureConfirmation";
+                var temp = event.payload.targetTemperature.value;
                 //    log("temp to set is ", temp)
-                    var intTemp = 0;
+                var intTemp = 0;
 
                 var headers = generateResponseHeader(event,confirmation);
 
@@ -224,30 +222,22 @@ function handleControl(event, context) {
 
                 confirmation = strConf;
                 getDevice(applianceId, what, function (callback) {
-                    if (strHeader.includes("Reading")) {
-                        var GetPayload = {
-                            targetTemperature: {
-                                value: parseFloat(callback.value1)
-                            },
+                    var GetPayload = {
+                        targetTemperature: {
+                            value: parseFloat(callback.value1)
+                        },
 //                        applianceResponseTimestamp: Date.now(),
-                            temperatureMode: {
-                                value: "CUSTOM",
-                                friendlyName: callback.value2
-                            }
-                        };
-                    } else if (strHeader.includes("Target")){
-                        var GetPayload = {
-                            temperatureReading: {
-                                value: callback.value1
-                            }
+                        temperatureMode: {
+                            value: "CUSTOM",
+                            friendlyName: callback.value2
                         }
-                    }
+                    };
                     var headers = generateResponseHeader(event,confirmation);
                     var result = {
                         header: headers,
                         payload: GetPayload
                     };
-                 //   log("result is ", result)
+                    //   log("result is ", result)
                     context.succeed(result);
 
                 });
@@ -260,7 +250,7 @@ function handleControl(event, context) {
 }
 
 /*This handles device discovery - based on feedback, this now does it based on Room Plans.
-  If you want a device discovered, it needs to be in a room plan
+ If you want a device discovered, it needs to be in a room plan
  */
 
 function getDevs(event, context, passBack) {
@@ -278,7 +268,7 @@ function getDevs(event, context, passBack) {
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
-          //      log("device detail is: ", device)
+                //      log("device detail is: ", device)
                 // Omit devices which aren't in a room plan
                 if (device.planID === '0')
                     continue;
@@ -310,9 +300,9 @@ function getDevs(event, context, passBack) {
 
                 if (devType.startsWith("Scene") || devType.startsWith("Group")) {
                     appliancename.manufacturerName = device.name,
-                    appliancename.modelName = device.name,
-                    appliancename.version = device.idx,
-                    appliancename.applianceId = parseInt(device.idx) + 200;
+                        appliancename.modelName = device.name,
+                        appliancename.version = device.idx,
+                        appliancename.applianceId = parseInt(device.idx) + 200;
                     appliancename.applianceId.actions = ([
                         "turnOn",
                         "turnOff"
@@ -433,7 +423,7 @@ function getDevice(idx, devType, sendback){
     var intRet;
     api.getDevice({
         idx: idx
-        }, function(params, callback) {
+    }, function(params, callback) {
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
@@ -458,16 +448,15 @@ function getDevice(idx, devType, sendback){
                 } else if (devType === 'light'){
                     intRet = device.level
                 }
-                //return the temperature & the friendlyname
                 callBackString.value1 = intRet;
                 callBackString.value2 = devName;
                 sendback(callBackString)
             }}
-        });
-    }
+    });
+}
 
 function generateResponseHeader(request,response_name){
-     header = {
+    header = {
         'namespace': request.header.namespace,
         'name': response_name,
         'payloadVersion': '2',
