@@ -57,6 +57,7 @@ function handleControl(event, context) {
     var confirmation;
     var funcName;
     var strHeader = event.header.name;
+    log("header is ", strHeader)
   //  log("event is: ", event)
     switch (what) {
 
@@ -223,16 +224,24 @@ function handleControl(event, context) {
 
                 confirmation = strConf;
                 getDevice(applianceId, what, function (callback) {
-                    var GetPayload = {
-                        targetTemperature: {
-                            value: parseFloat(callback.value1)
-                        },
+                    if (strHeader.includes("Reading")) {
+                        var GetPayload = {
+                            targetTemperature: {
+                                value: parseFloat(callback.value1)
+                            },
 //                        applianceResponseTimestamp: Date.now(),
-                        temperatureMode: {
-                            value: "CUSTOM",
-                            friendlyName: callback.value2
+                            temperatureMode: {
+                                value: "CUSTOM",
+                                friendlyName: callback.value2
+                            }
+                        };
+                    } else if (strHeader.includes("Target")){
+                        var GetPayload = {
+                            temperatureReading: {
+                                value: callback.value1
+                            }
                         }
-                    };
+                    }
                     var headers = generateResponseHeader(event,confirmation);
                     var result = {
                         header: headers,
@@ -428,7 +437,7 @@ function getDevice(idx, devType, sendback){
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
-            //log("device list", devArray
+            log("device list", devArray)
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 var devName = device.name;
@@ -449,6 +458,7 @@ function getDevice(idx, devType, sendback){
                 } else if (devType === 'light'){
                     intRet = device.level
                 }
+                //return the temperature & the friendlyname
                 callBackString.value1 = intRet;
                 callBackString.value2 = devName;
                 sendback(callBackString)
