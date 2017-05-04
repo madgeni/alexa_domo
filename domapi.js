@@ -427,7 +427,7 @@ function getDevice(idx, devType, sendback){
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
-            log("device list", devArray)
+          //  log("device list", devArray)
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 var devName = device.name;
@@ -441,8 +441,10 @@ function getDevice(idx, devType, sendback){
                 var callBackString = {};
                 if(devType === 'temp'){
                     if (device.subType === "SetPoint"){
+                        log("Setpoint", "setpoint")
                         intRet = device.setPoint
                     } else {
+                        log("temp", "temp")
                         intRet = device.temp
                     }
                 } else if (devType === 'light'){
