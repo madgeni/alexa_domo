@@ -218,10 +218,10 @@ function handleControl(event, context) {
             }
             //GetTemp request
             else if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "GetTargetTemperatureRequest")) {
-                strConf = strHeader.replace('Request', 'Response');
-
+                strConf = strHeader.replace('Request', 'Response')
                 confirmation = strConf;
                 getDevice(applianceId, what, function (callback) {
+                    log("temperature is ", callback.value1)
                     var GetPayload = {
                         targetTemperature: {
                             value: parseFloat(callback.value1)
