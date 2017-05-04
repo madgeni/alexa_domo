@@ -237,7 +237,7 @@ function handleControl(event, context) {
                         header: headers,
                         payload: GetPayload
                     };
-                    //   log("result is ", result)
+                       log("result is ", result)
                     context.succeed(result);
 
                 });
