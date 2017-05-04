@@ -1,3 +1,4 @@
+
 var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
@@ -56,6 +57,7 @@ function handleControl(event, context) {
     var confirmation;
     var funcName;
     var strHeader = event.header.name;
+    //log("header is ", strHeader)
     //  log("event is: ", event)
     switch (what) {
 
@@ -218,26 +220,34 @@ function handleControl(event, context) {
             }
             //GetTemp request
             else if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "GetTargetTemperatureRequest")) {
-                strConf = strHeader.replace('Request', 'Response')
+                strConf = strHeader.replace('Request', 'Response');
+                // log("header is ", strHeader)
                 confirmation = strConf;
                 getDevice(applianceId, what, function (callback) {
-                    log("temperature is ", callback.value1)
-                    var GetPayload = {
-                        targetTemperature: {
-                            value: parseFloat(callback.value1)
-                        },
+                    if (strHeader.includes("Target")) {
+                        var GetPayload = {
+                            targetTemperature: {
+                                value: parseFloat(callback.value1)
+                            },
 //                        applianceResponseTimestamp: Date.now(),
-                        temperatureMode: {
-                            value: "CUSTOM",
-                            friendlyName: callback.value2
+                            temperatureMode: {
+                                value: "CUSTOM",
+                                friendlyName: callback.value2
+                            }
+                        };
+                    } else if (strHeader.includes("Reading")){
+                        var GetPayload = {
+                            temperatureReading: {
+                                value: parseFloat(callback.value1)
+                            }
                         }
-                    };
+                    }
                     var headers = generateResponseHeader(event,confirmation);
                     var result = {
                         header: headers,
                         payload: GetPayload
                     };
-                       log("result is ", result)
+                    //      log("result is ", result)
                     context.succeed(result);
 
                 });
@@ -427,7 +437,7 @@ function getDevice(idx, devType, sendback){
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
-          //  log("device list", devArray)
+            //   log("device list", devArray)
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 var devName = device.name;
@@ -441,15 +451,14 @@ function getDevice(idx, devType, sendback){
                 var callBackString = {};
                 if(devType === 'temp'){
                     if (device.subType === "SetPoint"){
-                        log("Setpoint", "setpoint")
                         intRet = device.setPoint
                     } else {
-                        log("temp", "temp")
                         intRet = device.temp
                     }
                 } else if (devType === 'light'){
                     intRet = device.level
                 }
+                //return the temperature & the friendlyname
                 callBackString.value1 = intRet;
                 callBackString.value2 = devName;
                 sendback(callBackString)
