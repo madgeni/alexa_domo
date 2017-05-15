@@ -3,6 +3,8 @@ var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
 
+var hsl = require('hsl-to-hex');
+
 var api = new Domoticz({
     protocol: conf.protocol,
     host: conf.host,
@@ -57,7 +59,7 @@ function handleControl(event, context) {
     var confirmation;
     var funcName;
     var strHeader = event.header.name;
-    //log("header is ", strHeader)
+    log("header is ", strHeader)
     //  log("event is: ", event)
     switch (what) {
 
@@ -71,6 +73,43 @@ function handleControl(event, context) {
             else if (strHeader === "TurnOffRequest") {
                 confirmation = "TurnOffConfirmation";
                 funcName = "Off";
+            }
+            else if (strHeader === "SetColorRequest"){
+                //do stuff here:
+                confirmation =  "SetColorConfirmation";
+                var intHue = event.payload.color.hue;
+                var intBright = event.payload.color.brightness;
+                var intSat = event.payload.color.saturation;
+                log("Hue", intHue)
+
+               // var hue = hsl(133, 40, 60)
+                var saturation = 40
+                var luminosity = 60
+                var hex = hsl(intHue, intSat, intBright);
+                hex = hex.replace(/^#/, "");
+              //  hex = hex.toString();
+                console.log(hex)
+                var headers = generateResponseHeader(event,confirmation);
+
+                setColour(applianceId,hex,intBright, function(callback){
+                    var ColPayload = {
+                        achievedState: {
+                            color: {
+                                hue: intHue
+                            },
+                            saturation: intSat,
+                            brightness: intBright,
+                        }
+                    };
+
+                    var result = {
+                        header: headers,
+                        payload: ColPayload
+                    };
+                    context.succeed(result);
+                });
+                break;
+
             }
             else if (strHeader === "SetPercentageRequest") {
                 dimLevel = event.payload.percentageState.value / ( 100 / maxDimLevel);
@@ -307,7 +346,6 @@ function getDevs(event, context, passBack) {
                     friendlyDescription: devType,
                     isReachable: true
                 };
-
                 if (devType.startsWith("Scene") || devType.startsWith("Group")) {
                     appliancename.manufacturerName = device.name,
                         appliancename.modelName = device.name,
@@ -388,6 +426,17 @@ function ctrlLights(switchtype, applianceId, func, sendback) {
         var payloads = {};
         sendback(payloads)
     });
+}
+function setColour(idx, hue, brightness, sendback){
+    log("am i here?", "here")
+    api.setColour({
+        idx: idx,
+        hue: hue,
+        brightness: brightness,
+    }, function (params, callback){
+        var payloads = {};
+        sendback(payloads)
+    })
 }
 
 //handles Groups

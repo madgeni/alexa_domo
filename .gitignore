@@ -13,5 +13,9 @@ launch.json
 lightswitch.json
 package.json
 .DS_Store
+get*.json
 *.zip
 *_myversion*.*
+*_*.*
+Bot*.*
+_*.*
