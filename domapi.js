@@ -82,13 +82,12 @@ function handleControl(event, context) {
                 var intSat = event.payload.color.saturation;
                 log("Hue", intHue)
 
-               // var hue = hsl(133, 40, 60)
                 var saturation = intSat;
                 var luminosity = intBright;
                 var hex = hsl(intHue, intSat, intBright);
                 hex = hex.replace(/^#/, "");
               //  hex = hex.toString();
-                console.log(hex)
+               // console.log(hex)
                 var headers = generateResponseHeader(event,confirmation);
 
                 setColour(applianceId,hex,intBright, function(callback){
@@ -156,7 +155,32 @@ function handleControl(event, context) {
                 context.succeed(result);
             });
             break;
+        case "lock":
+            if (strHeader === "SetLockStateRequest"){
+                confirmation = "SetLockStateConfirmation"
+                funcName = "On"
 
+                var headers = generateResponseHeader(event,confirmation);
+
+                ctrlLights(switchtype, applianceId, funcName, function (callback) {
+
+                    var ColPayload = {
+                        achievedState: {
+                            color: {
+                                hue: intHue
+                            },
+                            saturation: intSat,
+                            brightness: intBright,
+                        }
+                    };
+
+                    var result = {
+                        header: headers,
+                        payload: ColPayload
+                    };
+                    context.succeed(result);
+                })
+            }
         case "scene":
 
             var AppID = parseInt(event.payload.appliance.applianceId) - 200;
