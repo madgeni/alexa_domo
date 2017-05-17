@@ -3,7 +3,7 @@ var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
 
 var conf = require('./conf.json');
 
-var hsl = require('hsl-to-hex');
+var hsl = require('./node_modules/hsl-to-hex');
 
 var api = new Domoticz({
     protocol: conf.protocol,
