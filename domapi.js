@@ -83,8 +83,8 @@ function handleControl(event, context) {
                 log("Hue", intHue)
 
                // var hue = hsl(133, 40, 60)
-                var saturation = 40
-                var luminosity = 60
+                var saturation = intSat;
+                var luminosity = intBright;
                 var hex = hsl(intHue, intSat, intBright);
                 hex = hex.replace(/^#/, "");
               //  hex = hex.toString();
