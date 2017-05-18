@@ -1,7 +1,7 @@
 
-var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
+var Domoticz = require('../node_modules/domoticz-api/api/domoticz');
 
-var conf = require('./conf.json');
+var conf = require('../conf.json');
 var api = new Domoticz({
     protocol: conf.protocol,
     host: conf.host,

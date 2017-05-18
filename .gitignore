@@ -16,3 +16,4 @@ test*.json
 *.zip
 *_myversion*.*
 Bot*.*
+.DS_Store

@@ -2,14 +2,14 @@
 var hsl = require('./node_modules/hsl-to-hex');
 var conf = require('./conf.json');
 
-var ctrlDev = require('./ctrl_dev');
-var ctrltemp = require('./ctrl_temp');
-var getDev = require('./get_dev');
-var ctrlScene = require('./ctrl_scene');
-var ctrlColour = require('./ctrl_colour');
-var listDevs = require('./get_Devices');
-var log = require('./logger');
-var makeHeader = require('./HeaderGen');
+var ctrlDev = require('./domo-code/ctrl_dev');
+var ctrltemp = require('./domo-code/ctrl_temp');
+var getDev = require('./domo-code/get_dev');
+var ctrlScene = require('./domo-code/ctrl_scene');
+var ctrlColour = require('./domo-code/ctrl_colour');
+var listDevs = require('./domo-code/get_Devices');
+var log = require('./domo-code/logger');
+var makeHeader = require('./domo-code/HeaderGen');
 
 var result;
 var payloads;
