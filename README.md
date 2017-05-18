@@ -52,3 +52,18 @@ IncrementPercentageRequest
 Example Utterances:
 “Alexa, increase device name by number percent”
 
+SetColorRequest
+
+Example Utterances: 
+“Alexa, set the *device name* to color”
+“Alexa, set the bedroom light to red”
+“Alexa, change the kitchen to the color blue”
+“Alexa, turn the light fuschia”
+
+Specific Door Lock controls:
+
+SetLockStateRequest
+
+Example Utterances:
+
+“Alexa, lock the *lock name*”
