@@ -59,7 +59,7 @@ function handleControl(event, context) {
     var confirmation;
     var funcName;
     var strHeader = event.header.name;
-    log("header is ", strHeader)
+    // log("header is ", strHeader)
     //  log("event is: ", event)
     switch (what) {
 
