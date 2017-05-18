@@ -12,10 +12,7 @@ conf.json
 launch.json
 lightswitch.json
 package.json
-.DS_Store
-get*.json
+test*.json
 *.zip
 *_myversion*.*
-*_*.*
 Bot*.*
-_*.*

@@ -1,21 +1,19 @@
 
-var Domoticz = require('./node_modules/domoticz-api/api/domoticz');
-
+var hsl = require('./node_modules/hsl-to-hex');
 var conf = require('./conf.json');
 
-var hsl = require('./node_modules/hsl-to-hex');
-
-var api = new Domoticz({
-    protocol: conf.protocol,
-    host: conf.host,
-    port: conf.port,
-    username: conf.username,
-    password: conf.password
-});
+var ctrlDev = require('./ctrl_dev');
+var ctrltemp = require('./ctrl_temp');
+var getDev = require('./get_dev');
+var ctrlScene = require('./ctrl_scene');
+var ctrlColour = require('./ctrl_colour');
+var listDevs = require('./get_Devices');
+var log = require('./logger');
+var makeHeader = require('./HeaderGen');
 
 var result;
 var payloads;
-var appliances = [];
+
 
 //This is the heart of the code - takes the request/response headers for Alexa
 var func =  function (event, context) {
@@ -40,7 +38,7 @@ exports.handler = func;
 
 //This handles the Discovery
 function handleDiscovery(event, context) {
-    getDevs(event, context, function (passBack) {
+    listDevs(event, context, function (passBack) {
         context.succeed(passBack);
         appliances = [];
     })
@@ -59,8 +57,8 @@ function handleControl(event, context) {
     var confirmation;
     var funcName;
     var strHeader = event.header.name;
-    // log("header is ", strHeader)
-    //  log("event is: ", event)
+ //   log("header is ", strHeader)
+ //   log("event is: ", event)
     switch (what) {
 
         case "blind":
@@ -75,22 +73,18 @@ function handleControl(event, context) {
                 funcName = "Off";
             }
             else if (strHeader === "SetColorRequest"){
-                //do stuff here:
                 confirmation =  "SetColorConfirmation";
                 var intHue = event.payload.color.hue;
                 var intBright = event.payload.color.brightness;
                 var intSat = event.payload.color.saturation;
-                log("Hue", intHue)
-
-                var saturation = intSat;
-                var luminosity = intBright;
+               // log("Hue", intHue)
                 var hex = hsl(intHue, intSat, intBright);
                 hex = hex.replace(/^#/, "");
-              //  hex = hex.toString();
-               // console.log(hex)
-                var headers = generateResponseHeader(event,confirmation);
 
-                setColour(applianceId,hex,intBright, function(callback){
+               //log("hex is - ", hex)
+                headers = makeHeader(event,confirmation);
+
+                ctrlColour(applianceId,hex,intBright, function(callback){
                     var ColPayload = {
                         achievedState: {
                             color: {
@@ -108,7 +102,6 @@ function handleControl(event, context) {
                     context.succeed(result);
                 });
                 break;
-
             }
             else if (strHeader === "SetPercentageRequest") {
                 dimLevel = event.payload.percentageState.value / ( 100 / maxDimLevel);
@@ -117,24 +110,23 @@ function handleControl(event, context) {
                 funcName = dimLevel;
             }
             else if (strHeader.includes("IncrementPercent") || strHeader.includes("DecrementPercent")) {
-                var strConf = strHeader.replace('Request', 'Confirmation');
 
-                confirmation = strConf;
+                confirmation = strHeader.replace('Request', 'Confirmation');
 
                 var incLvl = event.payload.deltaPercentage.value;
 
                 switchtype = 'dimmable';
 
-                getDevice(applianceId, what, function (returnme) {
+                getDev(applianceId, what, function (returnme) {
                     var intRet = parseInt(returnme);
                     if (strConf.charAt(0) === 'I') {
                         funcName = intRet + (intRet / 100 * incLvl);
                     } else {
                         funcName = intRet - (intRet / 100 * incLvl);
                     }
-                    var headers = generateResponseHeader(event,confirmation);
+                    headers = makeHeader(event,confirmation);
 
-                    ctrlDevs(switchtype, applianceId, funcName, function (callback) {
+                    ctrlDev(switchtype, applianceId, funcName, function (callback) {
                         var result = {
                             header: headers,
                             payload: callback
@@ -145,9 +137,9 @@ function handleControl(event, context) {
                 break;
             }
 
-            var headers = generateResponseHeader(event,confirmation);
+            headers = makeHeader(event,confirmation);
 
-            ctrlDevs(switchtype, applianceId, funcName, function (callback) {
+            ctrlDev(switchtype, applianceId, funcName, function (callback) {
                 var result = {
                     header: headers,
                     payload: callback
@@ -159,18 +151,17 @@ function handleControl(event, context) {
             var lockstate = event.payload.lockState;
             if (strHeader === "GetLockStateRequest"){
                 confirmation = strConf;
-                getDevice(applianceId, what, function (callback) {
+                getDev(applianceId, what, function (callback) {
                     var GetPayload = {
                         lockState:"LOCKED"
                     }
-                    var headers = generateResponseHeader(event,confirmation);
+                    var headers = makeHeader(event,confirmation);
                     var result = {
                         header: headers,
                         payload: GetPayload
                     };
                     //      log("result is ", result)
                     context.succeed(result);
-
                 });
                 break;
             }
@@ -181,22 +172,22 @@ function handleControl(event, context) {
                 } else {
                     funcName = "Off"
                 }
+                headers = makeHeader(event,confirmation);
 
-                var headers = generateResponseHeader(event,confirmation);
-
-                ctrlDevs(switchtype, applianceId, funcName, function (callback) {
+                ctrlDev(switchtype, applianceId, funcName, function() {
 
                     var Payload = {
                         lockState: lockstate
                     };
-
                     var result = {
                         header: headers,
                         payload: Payload
                     };
                     context.succeed(result);
-                })
+                });
+                break;
             }
+            break;
         case "scene":
 
             var AppID = parseInt(event.payload.appliance.applianceId) - 200;
@@ -210,7 +201,7 @@ function handleControl(event, context) {
                 funcName = "Off";
             }
 
-            var headers = generateResponseHeader(event,confirmation);
+            headers = makeHeader(event,confirmation);
             ctrlScene(AppID, funcName, function (callback) {
                 var result = {
                     header: headers,
@@ -226,16 +217,15 @@ function handleControl(event, context) {
                 strConf = strHeader.replace('Request', 'Confirmation');
                 confirmation = strConf;
                 incLvl = event.payload.deltaTemperature.value;
-                getDevice(applianceId, what, function (returnme) {
+                getDev(applianceId, what, function (returnme) {
                     var intRet = parseFloat(returnme);
-                    intTemp = intRet;
                     if (strConf.charAt(0) === 'I') {
                         temp = intRet + incLvl;
                     } else {
                         temp = intRet - incLvl
                     }
                     log("temperature to set is: ", temp);
-                    var headers = generateResponseHeader(event,confirmation);
+                    var headers = makeHeader(event,confirmation);
 
                     var TempPayload = {
                         targetTemperature: {
@@ -246,14 +236,14 @@ function handleControl(event, context) {
                         },
                         previousState: {
                             targetTemperature: {
-                                value: intTemp
+                                value: intRet
                             },
                             mode: {
                                 value: "Heat"
                             }
                         }
                     };
-                    ctrlTemp(applianceId, temp, function (callback) {
+                    ctrltemp(applianceId, temp, function (callback) {
                         var result = {
                             header: headers,
                             payload: TempPayload
@@ -262,14 +252,11 @@ function handleControl(event, context) {
                     });
                 });
                 break;
-
             } else if (strHeader.includes("SetTargetTemperature")) {
                 confirmation = "SetTargetTemperatureConfirmation";
                 var temp = event.payload.targetTemperature.value;
                 //    log("temp to set is ", temp)
-                var intTemp = 0;
-
-                var headers = generateResponseHeader(event,confirmation);
+                var headers = makeHeader(event,confirmation);
 
                 TempPayload = {
                     targetTemperature: {
@@ -280,14 +267,14 @@ function handleControl(event, context) {
                     },
                     previousState: {
                         targetTemperature: {
-                            value: intTemp
+                            value: 0
                         },
                         mode: {
                             value: "Heat"
                         }
                     }
                 };
-                ctrlTemp(applianceId, temp, function (callback) {
+                ctrltemp(applianceId, temp, function () {
                     var result = {
                         header: headers,
                         payload: TempPayload
@@ -295,295 +282,42 @@ function handleControl(event, context) {
                     context.succeed(result);
                 });
                 break;
-
             }
             //GetTemp request
             else if ((strHeader === "GetTemperatureReadingRequest")||(strHeader === "GetTargetTemperatureRequest")) {
                 strConf = strHeader.replace('Request', 'Response');
                 // log("header is ", strHeader)
                 confirmation = strConf;
-                getDevice(applianceId, what, function (callback) {
+                getDev(applianceId, what, function (callback) {
                     if (strHeader.includes("Target")) {
                         var GetPayload = {
                             targetTemperature: {
                                 value: parseFloat(callback.value1)
                             },
-//                        applianceResponseTimestamp: Date.now(),
                             temperatureMode: {
                                 value: "CUSTOM",
                                 friendlyName: callback.value2
                             }
                         };
                     } else if (strHeader.includes("Reading")){
-                        var GetPayload = {
+                         GetPayload = {
                             temperatureReading: {
                                 value: parseFloat(callback.value1)
                             }
                         }
                     }
-                    var headers = generateResponseHeader(event,confirmation);
+                    var headers = makeHeader(event,confirmation);
                     var result = {
                         header: headers,
                         payload: GetPayload
                     };
                     //      log("result is ", result)
                     context.succeed(result);
-
                 });
-                break;
             }
+            break;
         default:
             log("error ","error - not hit a device type");
 
     }
 }
-
-/*This handles device discovery - based on feedback, this now does it based on Room Plans.
- If you want a device discovered, it needs to be in a room plan
- */
-
-function getDevs(event, context, passBack) {
-
-    var response_name = "DiscoverAppliancesResponse";
-    var headers = generateResponseHeader(event,response_name);
-
-    api.getDevices({}, function (error, devices) {
-        if (error){
-            log("error:", error);
-            handleError(event, context, "TargetBridgeConnectivityUnstableError");
-            return;
-        }
-        var devArray = devices.results;
-        if (devArray) {
-            for (var i = 0; i < devArray.length; i++) {
-                var device = devArray[i];
-                //      log("device detail is: ", device)
-                // Omit devices which aren't in a room plan
-                if (device.planID === '0')
-                    continue;
-
-                var devType = device.type;
-                var setswitch = device.switchType;
-                var dz_name = device.name;
-
-                if (device.description !== "") {
-                    // Search for Alexa_Name string, ignore casesensitive and whitespaces
-
-                    var regex = /Alexa_Name:\s*(.+)/im;
-                    var match = regex.exec(device.description);
-                    if (match !== null) {
-                        dz_name = match[1].trim();
-                    }
-                }
-                //var msg = ("device name is - ", device.name, " and friendly description is ", dz_name);
-                // log("device info", msg);
-                var appliancename = {
-                    applianceId: device.idx,
-                    manufacturerName: device.hardwareName,
-                    modelName: device.subType,
-                    version: device.switchType,
-                    friendlyName: dz_name,
-                    friendlyDescription: devType,
-                    isReachable: true
-                };
-                if (devType.startsWith("Scene") || devType.startsWith("Group")) {
-                    appliancename.manufacturerName = device.name,
-                        appliancename.modelName = device.name,
-                        appliancename.version = device.idx,
-                        appliancename.applianceId = parseInt(device.idx) + 200;
-                    appliancename.applianceId.actions = ([
-                        "turnOn",
-                        "turnOff"
-                    ]);
-                    appliancename.additionalApplianceDetails = ({
-                        WhatAmI: "scene"
-                    });
-                    appliances.push(appliancename);
-                }
-                else if (devType.startsWith("Light")) {
-                    appliancename.actions = ([
-                        "incrementPercentage",
-                        "decrementPercentage",
-                        "setPercentage",
-                        "turnOn",
-                        "turnOff"
-                    ]);
-                    appliancename.additionalApplianceDetails = ({
-                        maxDimLevel: device.maxDimLevel,
-                        switchis: setswitch,
-                        WhatAmI: "light"
-                    });
-                    appliances.push(appliancename);
-                }
-                else if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
-                    appliancename.actions = ([
-                        "turnOn",
-                        "turnOff"
-                    ]);
-                    appliancename.additionalApplianceDetails = ({
-                        switchis: setswitch,
-                        WhatAmI: "blind"
-                    });
-                    appliances.push(appliancename);
-                }
-                else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
-                    appliancename.version = "temp";
-                    appliancename.actions = ([
-                        "getTargetTemperature",
-                        "getTemperatureReading",
-                        "incrementTargetTemperature",
-                        "decrementTargetTemperature",
-                        "setTargetTemperature"
-                    ]);
-                    appliancename.additionalApplianceDetails = ({
-                        WhatAmI: "temp"
-                    });
-                    appliances.push(appliancename);
-                }
-                else if(devType.startsWith("Lock")){
-                    appliancename.actions = ([
-                        "getLockState",
-                        "setLockState"
-                    ]);
-                    appliancename.additionalApplianceDetails = ({
-                        maxDimLevel: device.maxDimLevel,
-                        switchis: setswitch,
-                        WhatAmI: "lock"
-                    });
-                    appliances.push(appliancename);
-
-                }
-            }
-        }
-        //log("payload: ", appliances);
-        var payloads = {
-            discoveredAppliances: appliances
-        };
-        var result = {
-            header: headers,
-            payload: payloads
-        };
-        passBack(result);
-    });
-
-}
-//handles lights
-
-function ctrlDevs(switchtype, applianceId, func, sendback) {
-
-    api.changeSwitchState({
-        type: switchtype,
-        idx: applianceId,
-        state: func
-    }, function (params, callback) {
-        var payloads = {};
-        sendback(payloads)
-    });
-}
-function setColour(idx, hue, brightness, sendback){
-  //  log("am i here?", "here")
-    api.setColour({
-        idx: idx,
-        hue: hue,
-        brightness: brightness,
-    }, function (params, callback){
-        var payloads = {};
-        sendback(payloads)
-    })
-}
-
-//handles Groups
-function ctrlScene(idx, func, sendback) {
-    api.changeSceneState({
-        idx: idx,
-        state: func
-    }, function (params, callback) {
-        var payloads = {};
-        sendback(payloads)
-    });
-
-}
-
-//handles temperature sensors
-function ctrlTemp(idx, temp, sendback) {
-
-    api.uTemp({
-        idx: idx,
-        value: temp
-    }, function(params, callback) {
-        var payloads = {};
-        sendback(payloads)
-    });
-}
-
-//This handles the errors - obvs!
-function handleError(event, context, name) {
-
-    var headers = generateResponseHeader(event,name);
-
-    var payload = {};
-
-    var result = {
-        header: headers,
-        payload: payload
-    };
-
-    context.succeed(result);
-}
-
-function getDevice(idx, devType, sendback){
-    var intRet;
-    api.getDevice({
-        idx: idx
-    }, function(params, callback) {
-        var devArray = callback.results;
-        if (devArray) {
-            //turn this on to check the list of values the device returns
-            log("device list", devArray)
-            for (var i = 0; i < devArray.length; i++) {
-                var device = devArray[i];
-                var devName = device.name;
-                if (device.description !== "") {
-                    var regex = /Alexa_Name:\s*(.+)/im;
-                    var match = regex.exec(device.description);
-                    if (match !== null) {
-                        devName = match[1].trim();
-                    }
-                }
-                var callBackString = {};
-                if(devType === 'temp'){
-                    if (device.subType === "SetPoint"){
-                        intRet = device.setPoint
-                    } else {
-                        intRet = device.temp
-                    }
-                    callBackString.value1 = intRet;
-                    callBackString.value2 = devName;
-                } else if (devType === 'light'){
-                    callBackString = device.level
-                } else if (devType === 'lock'){
-                    callBackString = device.state
-                }
-                //return the temperature & the friendlyname
-               // callBackString.value1 = intRet;
-               // callBackString.value2 = devName;
-                sendback(callBackString)
-            }}
-    });
-}
-
-function generateResponseHeader(request,response_name){
-    header = {
-        'namespace': request.header.namespace,
-        'name': response_name,
-        'payloadVersion': '2',
-        'messageId': request.header.messageId
-    };
-    return header;
-}
-//This is the logger
-var log = function(title, msg) {
-
-    console.log('**** ' + title + ': ' + JSON.stringify(msg));
-
-};
