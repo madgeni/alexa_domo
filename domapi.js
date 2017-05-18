@@ -134,7 +134,7 @@ function handleControl(event, context) {
                     }
                     var headers = generateResponseHeader(event,confirmation);
 
-                    ctrlLights(switchtype, applianceId, funcName, function (callback) {
+                    ctrlDevs(switchtype, applianceId, funcName, function (callback) {
                         var result = {
                             header: headers,
                             payload: callback
@@ -147,7 +147,7 @@ function handleControl(event, context) {
 
             var headers = generateResponseHeader(event,confirmation);
 
-            ctrlLights(switchtype, applianceId, funcName, function (callback) {
+            ctrlDevs(switchtype, applianceId, funcName, function (callback) {
                 var result = {
                     header: headers,
                     payload: callback
@@ -156,27 +156,27 @@ function handleControl(event, context) {
             });
             break;
         case "lock":
+            var lockstate = event.payload.lockState;
+
             if (strHeader === "SetLockStateRequest"){
-                confirmation = "SetLockStateConfirmation"
-                funcName = "On"
+                confirmation = "SetLockStateConfirmation";
+                if (lockstate === "LOCKED"){
+                    funcName = "On"
+                } else {
+                    funcName = "Off"
+                }
 
                 var headers = generateResponseHeader(event,confirmation);
 
-                ctrlLights(switchtype, applianceId, funcName, function (callback) {
+                ctrlDevs(switchtype, applianceId, funcName, function (callback) {
 
-                    var ColPayload = {
-                        achievedState: {
-                            color: {
-                                hue: intHue
-                            },
-                            saturation: intSat,
-                            brightness: intBright,
-                        }
+                    var Payload = {
+                        lockState: lockstate
                     };
 
                     var result = {
                         header: headers,
-                        payload: ColPayload
+                        payload: Payload
                     };
                     context.succeed(result);
                 })
@@ -424,6 +424,19 @@ function getDevs(event, context, passBack) {
                     });
                     appliances.push(appliancename);
                 }
+                else if(devType.startsWith("Lock")){
+                    appliancename.actions = ([
+                        "getLockState",
+                        "setLockState"
+                    ]);
+                    appliancename.additionalApplianceDetails = ({
+                        maxDimLevel: device.maxDimLevel,
+                        switchis: setswitch,
+                        WhatAmI: "lock"
+                    });
+                    appliances.push(appliancename);
+
+                }
             }
         }
         //log("payload: ", appliances);
@@ -440,7 +453,7 @@ function getDevs(event, context, passBack) {
 }
 //handles lights
 
-function ctrlLights(switchtype, applianceId, func, sendback) {
+function ctrlDevs(switchtype, applianceId, func, sendback) {
 
     api.changeSwitchState({
         type: switchtype,
