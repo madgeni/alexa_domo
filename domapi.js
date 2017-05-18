@@ -157,7 +157,23 @@ function handleControl(event, context) {
             break;
         case "lock":
             var lockstate = event.payload.lockState;
+            if (strHeader === "GetLockStateRequest"){
+                confirmation = strConf;
+                getDevice(applianceId, what, function (callback) {
+                    var GetPayload = {
+                        lockState:"LOCKED"
+                    }
+                    var headers = generateResponseHeader(event,confirmation);
+                    var result = {
+                        header: headers,
+                        payload: GetPayload
+                    };
+                    //      log("result is ", result)
+                    context.succeed(result);
 
+                });
+                break;
+            }
             if (strHeader === "SetLockStateRequest"){
                 confirmation = "SetLockStateConfirmation";
                 if (lockstate === "LOCKED"){
@@ -465,7 +481,7 @@ function ctrlDevs(switchtype, applianceId, func, sendback) {
     });
 }
 function setColour(idx, hue, brightness, sendback){
-    log("am i here?", "here")
+  //  log("am i here?", "here")
     api.setColour({
         idx: idx,
         hue: hue,
@@ -523,7 +539,7 @@ function getDevice(idx, devType, sendback){
         var devArray = callback.results;
         if (devArray) {
             //turn this on to check the list of values the device returns
-            //   log("device list", devArray)
+            log("device list", devArray)
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
                 var devName = device.name;
@@ -541,12 +557,16 @@ function getDevice(idx, devType, sendback){
                     } else {
                         intRet = device.temp
                     }
+                    callBackString.value1 = intRet;
+                    callBackString.value2 = devName;
                 } else if (devType === 'light'){
-                    intRet = device.level
+                    callBackString = device.level
+                } else if (devType === 'lock'){
+                    callBackString = device.state
                 }
                 //return the temperature & the friendlyname
-                callBackString.value1 = intRet;
-                callBackString.value2 = devName;
+               // callBackString.value1 = intRet;
+               // callBackString.value2 = devName;
                 sendback(callBackString)
             }}
     });
