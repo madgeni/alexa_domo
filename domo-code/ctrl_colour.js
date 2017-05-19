@@ -12,21 +12,12 @@ var api = new Domoticz({
 log = require('./logger');
 
 module.exports = function (idx, hue, brightness, sendback){
-
     api.setColour({
         idx: idx,
         hue: hue,
         brightness: brightness,
     }, function (params){
-        var payLoad = {
-            achievedState: {
-                color: {
-                    hue: intHue
-                },
-                saturation: intSat,
-                brightness: intBright,
-            }
-        };
-        sendback(payLoad)
+        var payload = hue;
+        sendback(payload)
     })
 };

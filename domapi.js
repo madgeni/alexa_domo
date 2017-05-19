@@ -2,6 +2,7 @@
 var handleControl = require('./domo-code/Control');
 var handleDiscovery = require('./domo-code/Discovery');
 
+
 //This is the heart of the code - takes the request/response headers for Alexa
 var func =  function (event, context) {
 
@@ -19,7 +20,5 @@ var func =  function (event, context) {
             context.fail('Something went wrong');
             break;
     }
-
 };
 exports.handler = func;
-

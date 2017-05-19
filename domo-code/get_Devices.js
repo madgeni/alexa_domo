@@ -28,7 +28,7 @@ module.exports = function (event, context, passBack) {
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
-           //     log("device detail is: ", device)
+                //log("device detail is: ", device)
                 // Omit devices which aren't in a room plan
                 if (device.planID === '0')
                     continue;
@@ -72,11 +72,13 @@ module.exports = function (event, context, passBack) {
                 }
                 else if (devType.startsWith("Light")) {
                         appliancename.actions = ([
-                        "incrementPercentage",
-                        "decrementPercentage",
-                        "setPercentage",
-                        "turnOn",
-                        "turnOff"
+                            "incrementPercentage",
+                            "decrementPercentage",
+                            "setPercentage",
+                            "turnOn",
+                            "turnOff",
+                            "setColor",
+                            "setColorTemperature"
                         ]);
                         appliancename.additionalApplianceDetails = ({
                         maxDimLevel: device.maxDimLevel,
@@ -86,10 +88,10 @@ module.exports = function (event, context, passBack) {
                         appliances.push(appliancename);
                 }
                 else if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
-                        appliancename.actions = ([
+                        appliancename.actions = [
                         "turnOn",
                         "turnOff"
-                        ]);
+                        ];
                         appliancename.additionalApplianceDetails = ({
                         switchis: setswitch,
                         WhatAmI: "blind"
@@ -98,34 +100,32 @@ module.exports = function (event, context, passBack) {
                 }
                 else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
                         appliancename.version = "temp";
-                        appliancename.actions = ([
+                        appliancename.actions = [
                         "getTargetTemperature",
                         "getTemperatureReading",
                         "incrementTargetTemperature",
                         "decrementTargetTemperature",
                         "setTargetTemperature"
-                        ]);
+                        ];
                         appliancename.additionalApplianceDetails = ({
                         WhatAmI: "temp"
                         });
                         appliances.push(appliancename);
                 }
                 else if(devType.startsWith("Lock")){
-                        appliancename.actions = ([
+                        appliancename.actions = [
                         "getLockState",
                         "setLockState"
-                        ]);
-
+                        ];
                         appliancename.additionalApplianceDetails = ({
                         switchis: setswitch,
                         WhatAmI: "lock"
                         });
                         appliances.push(appliancename);
-
                 }
             }
         }
-        //log("payload: ", appliances);
+
         var payloads = {
             discoveredAppliances: appliances
         };
@@ -133,6 +133,7 @@ module.exports = function (event, context, passBack) {
             header: headers,
             payload: payloads
         };
+       // validator.validateResponse(event, result);
         passBack(result);
     });
 

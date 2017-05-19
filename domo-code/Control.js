@@ -62,24 +62,30 @@ module.exports = function (event, context) {
                         context.succeed(result);
                     });
                     break;
-
                 }
                 else if (strHeader === "SetColorRequest"){
                     var intHue = event.payload.color.hue;
                     var intBright = event.payload.color.brightness;
                     var intSat = event.payload.color.saturation;
-                    // log("Hue", intHue)
+               //     log("Hue", intHue)
                     var hex = hsl(intHue, intSat, intBright);
                     hex = hex.replace(/^#/, "");
-
                     //log("hex is - ", hex)
                     headers = makeHeader(event,strConf);
 
                     ctrlColour(applianceId,hex,intBright, function(callback){
-
+                        var payLoad = {
+                            achievedState: {
+                                color: {
+                                    hue: callback
+                                },
+                                saturation: intSat,
+                                brightness: intBright,
+                            }
+                        };
                         var result = {
                             header: headers,
-                            payload: callback
+                            payload: payLoad
                         };
                         context.succeed(result);
                     });

@@ -60,6 +60,13 @@ Example Utterances:
 “Alexa, change the kitchen to the color blue”
 “Alexa, turn the light fuschia”
 
+SetColorTemperatureRequest 
+
+Example Utterances:
+“Alexa, change the *device name* to shade of white”
+“Alexa, make the living room warm white”
+“Alexa, set the kitchen to daylight”
+
 Specific Door Lock controls:
 
 SetLockStateRequest
