@@ -28,7 +28,7 @@ module.exports = function (event, context, passBack) {
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
-                //      log("device detail is: ", device)
+           //     log("device detail is: ", device)
                 // Omit devices which aren't in a room plan
                 if (device.planID === '0')
                     continue;

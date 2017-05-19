@@ -11,22 +11,19 @@ var api = new Domoticz({
 });
 log = require('./logger');
 
-module.exports = function (idx, hue, brightness, sendback){
+module.exports = function (idx, kelvin, sendback){
 
-    api.setColour({
+    api.Kelvin({
         idx: idx,
-        hue: hue,
-        brightness: brightness,
+        kelvin: kelvin,
     }, function (params){
-        var payLoad = {
+        var payload = {
             achievedState: {
-                color: {
-                    hue: intHue
-                },
-                saturation: intSat,
-                brightness: intBright,
+                colorTemperature: {
+                    value: kelvin
+                }
             }
         };
-        sendback(payLoad)
+        sendback(payload)
     })
 };
