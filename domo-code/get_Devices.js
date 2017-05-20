@@ -28,7 +28,7 @@ module.exports = function (event, context, passBack) {
         if (devArray) {
             for (var i = 0; i < devArray.length; i++) {
                 var device = devArray[i];
-                //log("device detail is: ", device)
+                //      log("device detail is: ", device)
                 // Omit devices which aren't in a room plan
                 if (device.planID === '0')
                     continue;
@@ -38,94 +38,85 @@ module.exports = function (event, context, passBack) {
                 var dz_name = device.name;
 
                 if (device.description !== "") {
-                    // Search for Alexa_Name string, ignore case sensitivity and whitespaces
+                    // Search for Alexa_Name string, ignore casesensitive and whitespaces
 
                     var regex = /Alexa_Name:\s*(.+)/im;
                     var match = regex.exec(device.description);
-
                     if (match !== null) {
                         dz_name = match[1].trim();
                     }
                 }
-                    var appliancename = {
-                        applianceId: device.idx,
-                        manufacturerName: device.hardwareName,
-                        modelName: device.subType,
-                        version: device.switchType,
-                        friendlyName: dz_name,
-                        friendlyDescription: devType,
-                        isReachable: true
-                    };
+                //var msg = ("device name is - ", device.name, " and friendly description is ", dz_name);
+                // log("device info", msg);
+                var appliancename = {
+                    applianceId: device.idx,
+                    manufacturerName: device.hardwareName,
+                    modelName: device.subType,
+                    version: device.switchType,
+                    friendlyName: dz_name,
+                    friendlyDescription: devType,
+                    isReachable: true
+                };
+
                 if (devType.startsWith("Scene") || devType.startsWith("Group")) {
-                        appliancename.manufacturerName = device.name,
+                    appliancename.manufacturerName = device.name,
                         appliancename.modelName = device.name,
                         appliancename.version = device.idx,
                         appliancename.applianceId = parseInt(device.idx) + 200;
-                        appliancename.applianceId.actions = ([
+                        appliancename.actions = ([
                         "turnOn",
                         "turnOff"
-                        ]);
-                        appliancename.additionalApplianceDetails = ({
+                    ]);
+                    appliancename.additionalApplianceDetails = ({
                         WhatAmI: "scene"
-                        });
-                        appliances.push(appliancename);
+                    });
+                    appliances.push(appliancename);
                 }
                 else if (devType.startsWith("Light")) {
-                        appliancename.actions = ([
-                            "incrementPercentage",
-                            "decrementPercentage",
-                            "setPercentage",
-                            "turnOn",
-                            "turnOff",
-                            "setColor",
-                            "setColorTemperature"
-                        ]);
-                        appliancename.additionalApplianceDetails = ({
+                    appliancename.actions = ([
+                        "incrementPercentage",
+                        "decrementPercentage",
+                        "setPercentage",
+                        "turnOn",
+                        "turnOff",
+                        "setColor",
+                        "setColorTemperature"
+                    ]);
+                    appliancename.additionalApplianceDetails = ({
                         maxDimLevel: device.maxDimLevel,
                         switchis: setswitch,
                         WhatAmI: "light"
-                        });
-                        appliances.push(appliancename);
+                    });
+                    appliances.push(appliancename);
                 }
                 else if (devType.startsWith("Blind")|| devType.startsWith("RFY")) {
-                        appliancename.actions = [
+                    appliancename.actions = ([
                         "turnOn",
                         "turnOff"
-                        ];
-                        appliancename.additionalApplianceDetails = ({
+                    ]);
+                    appliancename.additionalApplianceDetails = ({
                         switchis: setswitch,
                         WhatAmI: "blind"
-                        });
-                        appliances.push(appliancename);
+                    });
+                    appliances.push(appliancename);
                 }
                 else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
-                        appliancename.version = "temp";
-                        appliancename.actions = [
+                    appliancename.version = "temp";
+                    appliancename.actions = ([
                         "getTargetTemperature",
                         "getTemperatureReading",
                         "incrementTargetTemperature",
                         "decrementTargetTemperature",
                         "setTargetTemperature"
-                        ];
-                        appliancename.additionalApplianceDetails = ({
+                    ]);
+                    appliancename.additionalApplianceDetails = ({
                         WhatAmI: "temp"
-                        });
-                        appliances.push(appliancename);
-                }
-                else if(devType.startsWith("Lock")){
-                        appliancename.actions = [
-                        "getLockState",
-                        "setLockState"
-                        ];
-                        appliancename.additionalApplianceDetails = ({
-                        switchis: setswitch,
-                        WhatAmI: "lock"
-                        });
-                        appliances.push(appliancename);
+                    });
+                    appliances.push(appliancename);
                 }
             }
         }
-
+        log("payload: ", appliances);
         var payloads = {
             discoveredAppliances: appliances
         };
@@ -133,7 +124,6 @@ module.exports = function (event, context, passBack) {
             header: headers,
             payload: payloads
         };
-       // validator.validateResponse(event, result);
         passBack(result);
     });
 
