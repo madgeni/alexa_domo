@@ -100,6 +100,17 @@ module.exports = function (event, context, passBack) {
                     });
                     appliances.push(appliancename);
                 }
+                else if (devType.startsWith("Lock")|| setswitch.startsWith("Contact")) {
+                    appliancename.actions = ([
+                        "getLockState",
+                        "setLockState"
+                    ]);
+                    appliancename.additionalApplianceDetails = ({
+                        switchis: setswitch,
+                        WhatAmI: "lock"
+                    });
+                    appliances.push(appliancename);
+                }
                 else if (devType.startsWith("Temp")|| devType.startsWith("Therm")) {
                     appliancename.version = "temp";
                     appliancename.actions = ([
