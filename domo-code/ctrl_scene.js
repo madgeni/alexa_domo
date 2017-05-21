@@ -1,23 +1,22 @@
+'use strict'
 
-var Domoticz = require('../node_modules/domoticz-api/api/domoticz');
+let Domoticz = require('../node_modules/domoticz-api/api/domoticz')
 
-var conf = require('../conf.json');
-var api = new Domoticz({
-    protocol: conf.protocol,
-    host: conf.host,
-    port: conf.port,
-    username: conf.username,
-    password: conf.password
-});
-log = require('./logger');
+let conf = require('../conf.json')
+let api = new Domoticz({
+  protocol: conf.protocol,
+  host: conf.host,
+  port: conf.port,
+  username: conf.username,
+  password: conf.password
+})
 
 module.exports = function (idx, func, sendback) {
-    api.changeSceneState({
-        idx: idx,
-        state: func
-    }, function (params) {
-        var payloads = {};
-        sendback(payloads)
-    });
-
-};
+  api.changeSceneState({
+    idx: idx,
+    state: func
+  }, function (params) {
+    let payloads = {}
+    sendback(payloads)
+  })
+}
