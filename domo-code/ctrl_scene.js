@@ -12,11 +12,17 @@ let api = new Domoticz({
 })
 
 module.exports = function (idx, func, sendback) {
+  let payloads
   api.changeSceneState({
     idx: idx,
     state: func
-  }, function (params) {
-    let payloads = {}
+  }, function (params, device) {
+    if (device.status === 'OK') {
+      payloads = {}
+    }
+    else {
+      payloads = 'Err'
+    }
     sendback(payloads)
   })
 }

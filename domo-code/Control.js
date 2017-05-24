@@ -13,6 +13,7 @@ let ctrlKelvin = require('./ctrl_kelvin')
 
 const makeHeader = require('./HeaderGen')
 let log = require('./logger')
+var payload
 
 // This handles the Control requests
 module.exports = function (event, context) {
@@ -42,9 +43,14 @@ module.exports = function (event, context) {
         let kelvin = event.payload.colorTemperature.value
       //  let headers = makeHeader(event, strConf)
         ctrlKelvin(applianceId, kelvin, function (callback) {
+          if (callback === 'Err') {
+            headers.name = 'TargetOfflineError'
+            payload = {}
+          }
+          payload = callback
           let result = {
             header: headers,
-            payload: callback
+            payload: payload
           }
           context.succeed(result)
         })
@@ -53,11 +59,8 @@ module.exports = function (event, context) {
         let intHue = event.payload.color.hue
         let intBright = event.payload.color.brightness
         let intSat = event.payload.color.saturation
-               //     log("Hue", intHue)
         let hex = hsl(intHue, intSat, intBright)
         hex = hex.replace(/^#/, '')
-                    // log("hex is - ", hex)
-       // let headers = makeHeader(event, strConf)
 
         ctrlColour(applianceId, hex, intBright, function (callback) {
           let payLoad = {
@@ -69,9 +72,14 @@ module.exports = function (event, context) {
               brightness: intBright
             }
           }
+          if (callback === 'Err') {
+            headers.name = 'TargetOfflineError'
+            payload = {}
+          }
+          payload = callback
           let result = {
             header: headers,
-            payload: payLoad
+            payload: payload
           }
           context.succeed(result)
         })
@@ -92,12 +100,15 @@ module.exports = function (event, context) {
           } else {
             funcName = intRet - (intRet / 100 * incLvl)
           }
-     //     headers = makeHeader(event, strConf)
-
-          ctrlDev(switchtype, applianceId, funcName, function (callback) {
+          ctrlDev(switchtype, applianceId, funcName, function (callback){
+            if (callback === 'Err') {
+              headers.name = 'TargetOfflineError'
+              payload = {}
+            }
+            payload = callback
             let result = {
               header: headers,
-              payload: callback
+              payload: payload
             }
             context.succeed(result)
           })
@@ -105,12 +116,16 @@ module.exports = function (event, context) {
         break
       }
 
-    //  let headers = makeHeader(event, strConf)
-
       ctrlDev(switchtype, applianceId, funcName, function (callback) {
+        let payload
+        payload = callback
+        if (callback === 'Err') {
+          headers.name = 'TargetOfflineError'
+          payload = {}
+        }
         let result = {
           header: headers,
-          payload: callback
+          payload: payload
         }
         context.succeed(result)
       })
@@ -123,9 +138,14 @@ module.exports = function (event, context) {
             lockState: 'LOCKED'
           }
           headers = makeHeader(event, strConf)
+          if (callback === 'Err') {
+            headers.name = 'TargetOfflineError'
+            payload = {}
+          }
+          payload = callback
           let result = {
             header: headers,
-            payload: GetPayload
+            payload: payload
           }
           context.succeed(result)
         })
@@ -139,13 +159,18 @@ module.exports = function (event, context) {
         }
         headers = makeHeader(event, strConf)
 
-        ctrlDev(switchtype, applianceId, funcName, function () {
-          let Payload = {
+        ctrlDev(switchtype, applianceId, funcName, function (callback) {
+          let payload = {
             lockState: lockstate
+          }
+
+          if (callback === 'Err') {
+            headers.name = 'TargetOfflineError'
+            payload = {}
           }
           let result = {
             header: headers,
-            payload: Payload
+            payload: payload
           }
           context.succeed(result)
         })
@@ -164,9 +189,15 @@ module.exports = function (event, context) {
 
      // var headers = makeHeader(event, strConf)
       ctrlScene(AppID, funcName, function (callback) {
+        payload = callback
+        if (callback === 'Err') {
+          headers.name = 'TargetOfflineError'
+          payload = {}
+        }
+
         let result = {
           header: headers,
-          payload: callback
+          payload: payload
         }
         context.succeed(result)
       })
@@ -204,6 +235,10 @@ module.exports = function (event, context) {
             }
           }
           ctrltemp(applianceId, temp, function (callback) {
+            if (callback === 'Err') {
+              headers.name = 'TargetOfflineError'
+              TempPayload = {}
+            }
             let result = {
               header: headers,
               payload: TempPayload
@@ -234,7 +269,11 @@ module.exports = function (event, context) {
             }
           }
         }
-        ctrltemp(applianceId, temp, function () {
+        ctrltemp(applianceId, temp, function (callback) {
+          if (callback === 'Err') {
+            headers.name = 'TargetOfflineError'
+            TempPayload = {}
+          }
           let result = {
             header: headers,
             payload: TempPayload
@@ -249,7 +288,7 @@ module.exports = function (event, context) {
                     // log("header is ", strHeader)
         getDev(applianceId, what, function (callback) {
           if (strHeader.includes('Target')) {
-            let GetPayload
+            var GetPayload
 
             GetPayload = {
               targetTemperature: {
@@ -261,15 +300,16 @@ module.exports = function (event, context) {
               }
             }
           } else if (strHeader.includes('Reading')) {
-            let GetPayload
-
-             GetPayload = {
+            GetPayload = {
               temperatureReading: {
                 value: parseFloat(callback.value1)
               }
             }
           }
-       //   let headers = makeHeader(event, strConf)
+          if (callback === 'Err') {
+            headers.name = 'TargetOfflineError'
+            GetPayload = {}
+          }
           let result
           result = {
             header: headers,

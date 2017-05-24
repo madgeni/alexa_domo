@@ -2,10 +2,11 @@
 
 let header
 
-module.exports = function (request, response_name) {
+module.exports = function (request, responseName) {
+
   header = {
     'namespace': request.header.namespace,
-    'name': response_name,
+    'name': responseName,
     'payloadVersion': '2',
     'messageId': request.header.messageId
   }
