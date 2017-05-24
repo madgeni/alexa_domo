@@ -63,7 +63,7 @@ module.exports = function (event, context) {
         hex = hex.replace(/^#/, '')
 
         ctrlColour(applianceId, hex, intBright, function (callback) {
-          let payLoad = {
+          let payload = {
             achievedState: {
               color: {
                 hue: callback
@@ -186,7 +186,7 @@ module.exports = function (event, context) {
       } else if (strHeader === 'TurnOffRequest') {
         funcName = 'Off'
       }
-
+      console.log('here? - on/off - IDX ', funcName, AppID)
      // var headers = makeHeader(event, strConf)
       ctrlScene(AppID, funcName, function (callback) {
         payload = callback

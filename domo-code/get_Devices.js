@@ -79,7 +79,6 @@ module.exports = function (event, context, passBack) {
             WhatAmI: 'scene',
             SceneIDX: appliancename.applianceId
           })
-            console.log(appliancename)
           appliances.push(appliancename)
         } else if (devType.startsWith('Light')) {
           appliancename.actions = ([
