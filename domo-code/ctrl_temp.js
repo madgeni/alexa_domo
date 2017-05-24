@@ -12,11 +12,17 @@ let api = new Domoticz({
 })
 
 module.exports = function (idx, temp, sendback) {
+  let payload
   api.uTemp({
     idx: idx,
     value: temp
-  }, function (params, callback) {
-    let payloads = {}
-    sendback(payloads)
+  }, function (params, device) {
+    if (device.status === 'OK') {
+      payload = {}
+    }
+    else {
+      payload = 'Err'
+    }
+    sendback(payload)
   })
 }

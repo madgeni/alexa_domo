@@ -13,6 +13,7 @@ const api = new Domoticz({
 })
 let log = require('./logger')
 const makeHeader = require('./HeaderGen')
+const handleError = require('./handleError')
 const appliances = []
 
 module.exports = function (event, context, passBack) {
@@ -75,8 +76,10 @@ module.exports = function (event, context, passBack) {
             'turnOff'
           ])
           appliancename.additionalApplianceDetails = ({
-            WhatAmI: 'scene'
+            WhatAmI: 'scene',
+            SceneIDX: appliancename.applianceId
           })
+            console.log(appliancename)
           appliances.push(appliancename)
         } else if (devType.startsWith('Light')) {
           appliancename.actions = ([
@@ -140,23 +143,4 @@ module.exports = function (event, context, passBack) {
     }
     passBack(result)
   })
-}
-
-/**
- * Creates Error handler.
- * @param {event} event is the full msg from alexa
- * @param {context} context provides detail
- * @param {name}  name message.
- */
-function handleError (event, context, name) {
-  const headers = makeHeader(event, name)
-
-  const payload = {}
-
-  const result = {
-    header: headers,
-    payload: payload
-  }
-
-  context.succeed(result)
 }

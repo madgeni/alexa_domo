@@ -12,12 +12,19 @@ let api = new Domoticz({
 })
 
 module.exports = function (switchtype, applianceId, func, sendback) {
+  let payload
   api.changeSwitchState({
     type: switchtype,
     idx: applianceId,
     state: func
-  }, function (params) {
-    let payloads = {}
-    sendback(payloads)
+  }, function (params, device) {
+    console.log(device)
+    if (device.status === 'OK') {
+      payload = {}
+    }
+    else {
+      payload = 'Err'
+    }
+    sendback(payload)
   })
 }

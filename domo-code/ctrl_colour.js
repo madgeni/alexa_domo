@@ -15,7 +15,10 @@ module.exports = function (idx, hue, brightness, sendback) {
     idx: idx,
     hue: hue,
     brightness: brightness
-  }, function (params) {
+  }, function (params, device) {
+    if (device.status === 'Err') {
+      hue = {}
+    }
     sendback(hue)
   })
 }

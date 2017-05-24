@@ -15,14 +15,21 @@ module.exports = function (idx, kelvin, sendback) {
   api.Kelvin({
     idx: idx,
     kelvin: kelvin
-  }, function (params) {
-    let payload = {
-      achievedState: {
-        colorTemperature: {
-          value: kelvin
+  }, function (params, device) {
+    let payload
+    if (device.status === 'OK') {
+      let payload = {
+        achievedState: {
+          colorTemperature: {
+            value: kelvin
+          }
         }
       }
     }
+    else {
+      payload = 'Err'
+    }
+
     sendback(payload)
   })
 }
