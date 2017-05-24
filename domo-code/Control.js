@@ -11,7 +11,7 @@ let ctrlScene = require('./ctrl_scene')
 let ctrlColour = require('./ctrl_colour')
 let ctrlKelvin = require('./ctrl_kelvin')
 
-let makeHeader = require('./HeaderGen')
+const makeHeader = require('./HeaderGen')
 let log = require('./logger')
 
 // This handles the Control requests
@@ -26,8 +26,10 @@ module.exports = function (event, context) {
   let strHeader = event.header.name
 
   let strConf = strHeader.replace('Request', 'Confirmation')
+  var headers = makeHeader(event, strConf)
         //   log("header is ", strHeader)
         //   log("event is: ", event)
+
   switch (what) {
     case 'blind':
     case 'light':
@@ -38,7 +40,7 @@ module.exports = function (event, context) {
         funcName = 'Off'
       } else if (strHeader === 'SetColorTemperatureRequest') {
         let kelvin = event.payload.colorTemperature.value
-        let headers = makeHeader(event, strConf)
+      //  let headers = makeHeader(event, strConf)
         ctrlKelvin(applianceId, kelvin, function (callback) {
           let result = {
             header: headers,
@@ -55,7 +57,7 @@ module.exports = function (event, context) {
         let hex = hsl(intHue, intSat, intBright)
         hex = hex.replace(/^#/, '')
                     // log("hex is - ", hex)
-        let headers = makeHeader(event, strConf)
+       // let headers = makeHeader(event, strConf)
 
         ctrlColour(applianceId, hex, intBright, function (callback) {
           let payLoad = {
@@ -90,7 +92,7 @@ module.exports = function (event, context) {
           } else {
             funcName = intRet - (intRet / 100 * incLvl)
           }
-          headers = makeHeader(event, strConf)
+     //     headers = makeHeader(event, strConf)
 
           ctrlDev(switchtype, applianceId, funcName, function (callback) {
             let result = {
@@ -103,7 +105,7 @@ module.exports = function (event, context) {
         break
       }
 
-      let headers = makeHeader(event, strConf)
+    //  let headers = makeHeader(event, strConf)
 
       ctrlDev(switchtype, applianceId, funcName, function (callback) {
         let result = {
@@ -120,7 +122,7 @@ module.exports = function (event, context) {
           let GetPayload = {
             lockState: 'LOCKED'
           }
-          let headers = makeHeader(event, strConf)
+          headers = makeHeader(event, strConf)
           let result = {
             header: headers,
             payload: GetPayload
@@ -152,7 +154,7 @@ module.exports = function (event, context) {
       break
     case 'scene':
 
-      let AppID = parseInt(event.payload.appliance.applianceId) - 200
+      let AppID = parseInt(event.payload.appliance.additionalApplianceDetails.SceneIDX) - 200
 
       if (strHeader === 'TurnOnRequest') {
         funcName = 'On'
@@ -160,7 +162,7 @@ module.exports = function (event, context) {
         funcName = 'Off'
       }
 
-      headers = makeHeader(event, strConf)
+     // var headers = makeHeader(event, strConf)
       ctrlScene(AppID, funcName, function (callback) {
         let result = {
           header: headers,
@@ -183,7 +185,7 @@ module.exports = function (event, context) {
             temp = intRet - incLvl
           }
           log('temperature to set is: ', temp)
-          let headers = makeHeader(event, strConf)
+//          let headers = makeHeader(event, strConf)
 
           let TempPayload = {
             targetTemperature: {
@@ -213,7 +215,7 @@ module.exports = function (event, context) {
       } else if (strHeader.includes('SetTargetTemperature')) {
         let temp = event.payload.targetTemperature.value
                     //    log("temp to set is ", temp)
-        let headers = makeHeader(event, strConf)
+//        let headers = makeHeader(event, strConf)
 
         let TempPayload
         TempPayload = {
@@ -261,13 +263,13 @@ module.exports = function (event, context) {
           } else if (strHeader.includes('Reading')) {
             let GetPayload
 
-            GetPayload = {
+             GetPayload = {
               temperatureReading: {
                 value: parseFloat(callback.value1)
               }
             }
           }
-          let headers = makeHeader(event, strConf)
+       //   let headers = makeHeader(event, strConf)
           let result
           result = {
             header: headers,
