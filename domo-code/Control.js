@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+
 'use strict'
 
 let hsl = require('../node_modules/hsl-to-hex')
@@ -43,11 +44,11 @@ module.exports = function (event, context) {
         let kelvin = event.payload.colorTemperature.value
       //  let headers = makeHeader(event, strConf)
         ctrlKelvin(applianceId, kelvin, function (callback) {
+          payload = callback
           if (callback === 'Err') {
             headers.name = 'TargetOfflineError'
             payload = {}
           }
-          payload = callback
           let result = {
             header: headers,
             payload: payload
@@ -72,11 +73,11 @@ module.exports = function (event, context) {
               brightness: intBright
             }
           }
+          payload = callback
           if (callback === 'Err') {
             headers.name = 'TargetOfflineError'
             payload = {}
           }
-          payload = callback
           let result = {
             header: headers,
             payload: payload
@@ -101,11 +102,11 @@ module.exports = function (event, context) {
             funcName = intRet - (intRet / 100 * incLvl)
           }
           ctrlDev(switchtype, applianceId, funcName, function (callback){
+            payload = callback
             if (callback === 'Err') {
               headers.name = 'TargetOfflineError'
               payload = {}
             }
-            payload = callback
             let result = {
               header: headers,
               payload: payload
