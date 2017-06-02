@@ -10,49 +10,49 @@ enjoy!
 
 Currently supported controls:
 
-Discovery:
+### Discovery
 “Alexa, discover my smart home devices”
 
-Turn On/Off:
+### Turn On/Off
 
 Example Utterances:
 “Alexa, turn on the device name”
 “Alexa, turn off the device name”
 
-GetTemperatureReadingRequest 
+### GetTemperatureReadingRequest 
 
-Example Utterances: “Alexa, what is the temperature of device name?” - Currently US hosting only
+Example Utterances: “Alexa, what is the temperature of device name?” - **Currently US hosting only**
 
-GetTargetTemperatureRequest 
+### GetTargetTemperatureRequest 
 
-Example Utterances: “Alexa, what is the device name set to? - Currently US hosting only
+Example Utterances: “Alexa, what is the device name set to? - **Currently US hosting only**
 
-SetTargetTemperatureRequest 
+### SetTargetTemperatureRequest 
 
 Example Utterances:
 “Alexa, set the device name to number degrees”
 
-IncrementTargetTemperatureRequest 
+### IncrementTargetTemperatureRequest 
 
 Example Utterances:
 “Alexa, increase the device name by number degrees”
 
-DecrementTargetTemperatureRequest 
+### DecrementTargetTemperatureRequest 
 
 Example Utterances:
 “Alexa, decrease device name by number degrees”
 
-Specific Light controls:
-SetPercentageRequest 
+## Specific Light controls
+### SetPercentageRequest 
 
 “Alexa, set name to number percent”
 
-IncrementPercentageRequest 
+### IncrementPercentageRequest 
 
 Example Utterances:
 “Alexa, increase device name by number percent”
 
-SetColorRequest
+### SetColorRequest
 
 Example Utterances: 
 “Alexa, set the *device name* to color”
@@ -60,16 +60,16 @@ Example Utterances:
 “Alexa, change the kitchen to the color blue”
 “Alexa, turn the light fuschia”
 
-SetColorTemperatureRequest 
+### SetColorTemperatureRequest 
 
 Example Utterances:
 “Alexa, change the *device name* to shade of white”
 “Alexa, make the living room warm white”
 “Alexa, set the kitchen to daylight”
 
-Specific Door Lock controls:
+## Specific Door Lock controls
 
-SetLockStateRequest
+### SetLockStateRequest
 
 Example Utterances:
 
