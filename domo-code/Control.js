@@ -5,11 +5,19 @@
 let hsl = require('../node_modules/hsl-to-hex')
 
 // Domoticz controls
+
+//  let getDev = require('./new_get_dev')
+//  let ctrlDev = require('./new_ctrl_dev')
+//  let ctrlTemp = require('./new_ctrl_temp')
+//  let ctrlKelvin = require('./new_ctrl_kelvin')
+
+let ctrlTemp = require('./ctrl_temp')
 let ctrlDev = require('./ctrl_dev')
-let ctrltemp = require('./ctrl_temp')
 let getDev = require('./get_dev')
+
 let ctrlScene = require('./ctrl_scene')
 let ctrlColour = require('./ctrl_colour')
+
 let ctrlKelvin = require('./ctrl_kelvin')
 
 const makeHeader = require('./HeaderGen')
@@ -29,8 +37,6 @@ module.exports = function (event, context) {
 
   let strConf = strHeader.replace('Request', 'Confirmation')
   var headers = makeHeader(event, strConf)
-        //   log("header is ", strHeader)
-        //   log("event is: ", event)
 
   switch (what) {
     case 'blind':
@@ -42,7 +48,7 @@ module.exports = function (event, context) {
         funcName = 'Off'
       } else if (strHeader === 'SetColorTemperatureRequest') {
         let kelvin = event.payload.colorTemperature.value
-      //  let headers = makeHeader(event, strConf)
+
         ctrlKelvin(applianceId, kelvin, function (callback) {
           payload = callback
           if (callback === 'Err') {
@@ -57,6 +63,7 @@ module.exports = function (event, context) {
         })
         break
       } else if (strHeader === 'SetColorRequest') {
+
         let intHue = event.payload.color.hue
         let intBright = event.payload.color.brightness
         let intSat = event.payload.color.saturation
@@ -120,6 +127,7 @@ module.exports = function (event, context) {
       ctrlDev(switchtype, applianceId, funcName, function (callback) {
         let payload
         payload = callback
+
         if (callback === 'Err') {
           headers.name = 'TargetOfflineError'
           payload = {}
@@ -128,6 +136,7 @@ module.exports = function (event, context) {
           header: headers,
           payload: payload
         }
+        console.log(result)
         context.succeed(result)
       })
       break
@@ -235,7 +244,7 @@ module.exports = function (event, context) {
               }
             }
           }
-          ctrltemp(applianceId, temp, function (callback) {
+          ctrlTemp(applianceId, temp, function (callback) {
             if (callback === 'Err') {
               headers.name = 'TargetOfflineError'
               TempPayload = {}
@@ -270,7 +279,7 @@ module.exports = function (event, context) {
             }
           }
         }
-        ctrltemp(applianceId, temp, function (callback) {
+        ctrlTemp(applianceId, temp, function (callback) {
           if (callback === 'Err') {
             headers.name = 'TargetOfflineError'
             TempPayload = {}
@@ -284,13 +293,13 @@ module.exports = function (event, context) {
         break
       }
                 // GetTemp request
-      else if ((strHeader === 'GetTemperatureReadingRequest') || (strHeader === 'GetTargetTemperatureRequest')) {
+      else if (strHeader.includes('GetTemperatureReading') || strHeader.includes('GetTargetTemperature')) {
         strConf = strHeader.replace('Request', 'Response')
-                    // log("header is ", strHeader)
+        let header = makeHeader(event, strConf)
+        // log("header is ", strHeader)
         getDev(applianceId, what, function (callback) {
           if (strHeader.includes('Target')) {
             var GetPayload
-
             GetPayload = {
               targetTemperature: {
                 value: parseFloat(callback.value1)
@@ -313,10 +322,9 @@ module.exports = function (event, context) {
           }
           let result
           result = {
-            header: headers,
+            header: header,
             payload: GetPayload
           }
-                        //      log("result is ", result)
           context.succeed(result)
         })
       }

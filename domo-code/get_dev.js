@@ -20,7 +20,7 @@ module.exports = function (idx, devType, sendback) {
     let devArray = callback.results
     if (devArray) {
             // turn this on to check the list of values the device returns
-       //     log("device list", devArray)
+   //    console.log("device list", devArray)
       for (let i = 0; i < devArray.length; i++) {
         let device = devArray[i]
         let devName = device.name
