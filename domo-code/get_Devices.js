@@ -5,9 +5,11 @@ const Domoticz = require('../node_modules/domoticz-api/api/domoticz')
 
 const conf = require('../conf.json')
 const api = new Domoticz({
+  authentication: conf.authentication,
   protocol: conf.protocol,
   host: conf.host,
   port: conf.port,
+  directory: conf.directory,
   username: conf.username,
   password: conf.password
 })
