@@ -40,6 +40,29 @@ module.exports = function (event, context) {
 
   switch (what) {
     case 'blind':
+      switchtype = 'switch'
+      if (strHeader === 'TurnOnRequest') {
+        funcName = 'Off'
+      } else if (strHeader === 'TurnOffRequest') {
+        funcName = 'On'
+      }
+
+      ctrlDev(switchtype, applianceId, funcName, function (callback) {
+        let payload
+        payload = callback
+
+        if (callback === 'Err') {
+          headers.name = 'TargetOfflineError'
+          payload = {}
+        }
+        let result = {
+          header: headers,
+          payload: payload
+        }
+        console.log(result)
+        context.succeed(result)
+      })
+      break
     case 'light':
       switchtype = 'switch'
       if (strHeader === 'TurnOnRequest') {
