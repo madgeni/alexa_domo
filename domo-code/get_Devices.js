@@ -70,14 +70,14 @@ module.exports = function (event, context, passBack) {
           appliancename.manufacturerName = device.name,
           appliancename.modelName = device.name,
           appliancename.version = device.idx,
-          appliancename.applianceId = parseInt(device.idx) + 200
+          appliancename.applianceId = 'scene_' + device.idx
           appliancename.actions = ([
             'turnOn',
             'turnOff'
           ])
           appliancename.additionalApplianceDetails = ({
             WhatAmI: 'scene',
-            SceneIDX: appliancename.applianceId
+            SceneIDX: parseInt(device.idx) + 200
           })
           appliances.push(appliancename)
         } else if (devType.startsWith('Light')) {
