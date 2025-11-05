@@ -1,24 +1,24 @@
 'use strict'
-const Domoticz = require('../node_modules/domoticz-api/api/domoticz')
+const Domoticz = require('./domoticz')
 
-const conf = require('../conf.json')
-const api = new Domoticz({
-  protocol: conf.protocol,
-  host: conf.host,
-  port: conf.port,
-  username: conf.username,
-  password: conf.password
-})
-
-module.exports = function (idx, hue, brightness, sendback) {
+module.exports = function (idx, hex, bearerToken, sendback) {
+  const api = new Domoticz(bearerToken)
+  
+  // Convert hex to RGB
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  console.log(`RGB values: r=${r}, g=${g}, b=${b}`)
+  
   api.setColour({
     idx: idx,
-    hue: hue,
-    brightness: brightness
-  }, function (params, device) {
-    if (device.status === 'Err') {
-      hue = {}
+    r: r,
+    g: g,
+    b: b
+  }, function (err, device) {
+    if (err || device.status === 'Err' || device.status === 'ERROR') {
+      hex = {}
     }
-    sendback(hue)
+    sendback(hex)
   })
 }

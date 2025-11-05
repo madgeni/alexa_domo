@@ -1,14 +1,11 @@
 'use strict'
 
-let header
-
-module.exports = function (request, responseName) {
-
-  header = {
-    'namespace': request.header.namespace,
-    'name': responseName,
-    'payloadVersion': '2',
-    'messageId': request.header.messageId
+module.exports = function (request, responseName, namespace) {
+  return {
+    namespace: namespace || request.header.namespace,
+    name: responseName,
+    payloadVersion: '3',
+    messageId: request.header.messageId,
+    correlationToken: request.header.correlationToken
   }
-  return header
 }

@@ -1,7 +1,7 @@
 {
   "name": "domapi",
   "version": "0.0.1",
-  "description": "Test domoticz api",
+  "description": "Domoticz to Alexa Smart Home API v3 bridge",
   "preferGlobal": "true",
   "files": "conf.json",
   "bin": {
@@ -9,7 +9,7 @@
   },
   "author": "nick",
   "engines": {
-    "node": "*"
+    "node": ">=18.x"
   },
   "dependencies": {
     "hsl-to-hex": "^1.0.0"

@@ -1,23 +1,16 @@
 'use strict'
 
-let Domoticz = require('../node_modules/domoticz-api/api/domoticz')
+let Domoticz = require('./domoticz')
 
-let conf = require('../conf.json')
-let api = new Domoticz({
-  protocol: conf.protocol,
-  host: conf.host,
-  port: conf.port,
-  username: conf.username,
-  password: conf.password
-})
-
-module.exports = function (idx, func, sendback) {
+module.exports = function (idx, func, bearerToken, sendback) {
+  let api = new Domoticz(bearerToken)
+  
   let payloads
   api.changeSceneState({
     idx: idx,
     state: func
-  }, function (params, device) {
-    if (device.status === 'OK') {
+  }, function (err, device) {
+    if (!err && device.status === 'OK') {
       payloads = {}
     }
     else {
